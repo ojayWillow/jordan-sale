@@ -1,0 +1,32 @@
+name: Auto-fetch shoe images
+
+on:
+  push:
+    paths: [ "data.js" ]        # runs when the shoe list changes
+  workflow_dispatch:            # or run it manually with one click
+  schedule:
+    - cron: "0 6 * * 1"         # retries missing images every Monday
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch image URLs
+        run: node scripts/fetch-images.js
+
+      - name: Commit images.json
+        run: |
+          git config user.name "image-bot"
+          git config user.email "actions@github.com"
+          git add images.json
+          git diff --cached --quiet || git commit -m "Auto-update shoe images"
+          git push

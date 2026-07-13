@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jordan WMNS izpārdošana — atlaides līdz –72%</title>
+
+<!-- Social sharing preview (Instagram, WhatsApp, Facebook) -->
+<meta property="og:title" content="Jordan WMNS izpārdošana — atlaides līdz –72%">
+<meta property="og:description" content="100+ Air Jordan modeļi sievietēm no €19. Omniva / DPD piegāde visā Latvijā.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="cover.jpg">
+<meta name="theme-color" content="#C8F551">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F2EE; --card:#FFFFFF; --ink:#101010;
+    --muted:#82827D; --marker:#C8F551; --line:#E3E3DC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+  body{background:var(--bg);color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased}
+  img{max-width:100%}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:26px 18px 18px;border-bottom:2px solid var(--ink);background:var(--bg)}
+  .hero-inner{max-width:1200px;margin:0 auto}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  h1{font-family:'Anton',sans-serif;font-size:clamp(34px,8vw,64px);line-height:.98;text-transform:uppercase;letter-spacing:.5px}
+  h1 .hl{background:linear-gradient(104deg,transparent 2%,var(--marker) 5%,var(--marker) 95%,transparent 98%);padding:0 8px;display:inline-block;transform:rotate(-1deg)}
+  .hero-meta{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .stat{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted)}
+  .stat b{color:var(--ink);font-weight:500}
+  .share-btn{
+    margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:13px;
+    border:1.5px solid var(--ink);background:var(--card);padding:9px 14px;cursor:pointer;
+    transition:box-shadow .12s ease, transform .12s ease;
+  }
+  .share-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+  .share-btn:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1.5px solid var(--ink);padding:10px 18px}
+  .toolbar-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:7px 12px;
+    border:1.5px solid var(--ink);background:var(--card);cursor:pointer;
+  }
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--marker)}
+  .chip:focus-visible,.toolbar input:focus,.toolbar select:focus{outline:3px solid var(--marker);outline-offset:1px}
+  .toolbar input,.toolbar select{
+    font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 10px;
+    border:1.5px solid var(--ink);border-radius:0;background:var(--card);color:var(--ink);appearance:none;
+  }
+  .toolbar input{flex:1;min-width:130px}
+
+  /* ---------- Grid / cards ---------- */
+  main{max-width:1200px;margin:0 auto;padding:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  @media (max-width:640px){ .grid{grid-template-columns:repeat(2,1fr);gap:9px} main{padding:12px 9px} }
+
+  .card{background:var(--card);border:1.5px solid var(--ink);display:flex;flex-direction:column;transition:transform .12s ease,box-shadow .12s ease}
+  .card:hover{transform:translateY(-2px);box-shadow:4px 4px 0 var(--ink)}
+  .imgwrap{position:relative;aspect-ratio:1/1;background:#F7F7F4;border-bottom:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .imgwrap img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+  .noimg{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-align:center;padding:10px}
+  .pct-badge{
+    position:absolute;top:8px;left:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;
+    background:var(--ink);color:var(--marker);padding:3px 7px;
+  }
+  .info{padding:11px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .name{font-weight:700;font-size:13.5px;line-height:1.25;text-transform:uppercase}
+  .code{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted)}
+  .prices{margin-top:auto;padding-top:8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .rrp{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);text-decoration:line-through}
+  .now{
+    font-family:'Anton',sans-serif;font-size:27px;line-height:1;
+    background:linear-gradient(100deg,transparent 1%,var(--marker) 6%,var(--marker) 94%,transparent 99%);
+    padding:2px 7px 3px;transform:rotate(-1deg);display:inline-block;
+  }
+  .reserve{
+    display:block;text-align:center;text-decoration:none;color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;
+    border-top:1.5px solid var(--ink);padding:9px;background:var(--card);
+  }
+  .reserve:hover{background:var(--marker)}
+  .reserve:focus-visible{outline:3px solid var(--marker);outline-offset:-4px}
+
+  .empty{padding:60px 20px;text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--muted)}
+
+  /* ---------- Delivery ---------- */
+  .delivery{border-top:2px solid var(--ink);margin-top:30px;background:var(--card)}
+  .delivery-inner{max-width:1200px;margin:0 auto;padding:28px 18px 34px}
+  h2{font-family:'Anton',sans-serif;font-size:clamp(22px,4vw,32px);text-transform:uppercase;margin-bottom:16px}
+  .del-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .del-item{border:1.5px solid var(--ink);padding:14px}
+  .del-item h3{font-size:15px;font-weight:700;text-transform:uppercase;margin-bottom:5px}
+  .del-item p{font-size:13.5px;line-height:1.45;color:#3d3d39}
+  .del-item .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:block;margin-top:7px}
+  .del-note{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:14px}
+
+  footer{max-width:1200px;margin:0 auto;padding:16px 18px 42px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);line-height:1.6}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">Sieviešu kolekcija · izpārdošana</p>
+    <h1>Jordan <span class="hl">līdz –72%</span></h1>
+    <div class="hero-meta">
+      <span class="stat"><b id="count">0</b> modeļi</span>
+      <span class="stat">cenas no <b>€19</b></span>
+      <span class="stat">piegāde visā <b>Latvijā</b></span>
+      <button class="share-btn" id="share">Dalīties ↗</button>
+    </div>
+  </div>
+</section>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="chips" id="chips" role="group" aria-label="Kategorija">
+      <button class="chip" data-cat="all" aria-pressed="true">Visi</button>
+      <button class="chip" data-cat="shoes" aria-pressed="false">Apavi</button>
+      <button class="chip" data-cat="slides" aria-pressed="false">Čības / Mules</button>
+    </div>
+    <input id="search" type="search" placeholder="Meklēt modeli vai kodu…" aria-label="Meklēt">
+    <select id="sort" aria-label="Kārtot">
+      <option value="pct">Lielākā atlaide</option>
+      <option value="priceAsc">Cena: no lētākās</option>
+      <option value="priceDesc">Cena: no dārgākās</option>
+      <option value="rrpDesc">RRP: no augstākās</option>
+    </select>
+  </div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>Nekas netika atrasts. Pamēģini citu meklējumu.</div>
+</main>
+
+<section class="delivery" id="piegade">
+  <div class="delivery-inner">
+    <h2>Piegāde un saņemšana</h2>
+    <div class="del-grid">
+      <div class="del-item">
+        <h3>Omniva pakomāts</h3>
+        <p>Piegāde uz jebkuru Omniva pakomātu visā Latvijā 1–2 darba dienu laikā.</p>
+        <span class="tag">populārākā izvēle</span>
+      </div>
+      <div class="del-item">
+        <h3>DPD Paku Skapis / Pickup</h3>
+        <p>DPD paku skapji un Pickup punkti — saņemšana sev ērtā vietā un laikā.</p>
+        <span class="tag">1–2 darba dienas</span>
+      </div>
+      <div class="del-item">
+        <h3>Venipak / Latvijas Pasts</h3>
+        <p>Alternatīva piegāde ar Venipak Pickup punktiem vai Latvijas Pasta nodaļām.</p>
+        <span class="tag">1–3 darba dienas</span>
+      </div>
+      <div class="del-item">
+        <h3>Saņemšana veikalā</h3>
+        <p>Rezervē un izņem uz vietas veikalā — bez maksas, tajā pašā dienā.</p>
+        <span class="tag">bezmaksas</span>
+      </div>
+    </div>
+    <p class="del-note">Piegādes maksa un pakomāta izvēle tiek precizēta, apstiprinot rezervāciju.</p>
+  </div>
+</section>
+
+<footer>
+  Cenas norādītas EUR ar atlaidi, izmēru pieejamība mainās katru dienu — rezervē laicīgi.<br>
+  Foto ielādējas automātiski pēc modeļa koda; ja foto vēl nav, tas parādīsies tuvākajā laikā.
+</footer>
+
+<script src="data.js"></script>
+<script>
+// ============ IESTATĪJUMI — nomaini uz savējiem ============
+const CONFIG = {
+  whatsapp: "37120000000",              // savs numurs bez "+"
+  instagram: "https://instagram.com/tavs_veikals",
+  reserveVia: "whatsapp"                // "whatsapp" vai "instagram"
+};
+// ============================================================
+
+const pct = s => Math.round((1 - s.price / s.rrp) * 100);
+const isSlide = s => /slide|mule/i.test(s.name);
+
+// Auto-fetched official photo URLs (written by the GitHub robot into images.json)
+let IMG_MAP = {};
+// no-cache: images.json is refreshed weekly by the GitHub robot — always revalidate so returning visitors get fresh photos
+fetch('images.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : {}).then(m => { IMG_MAP = m; render(); }).catch(()=>{});
+
+const imgSources = s => [
+  ...(IMG_MAP[s.style] ? [IMG_MAP[s.style]] : []),
+  ...(s.img ? [s.img] : []),
+  'img/' + s.style + '.jpg',
+  'https://secure-images.nike.com/is/image/DotCom/' + s.style.replace('-', '_') + '?wid=600&fmt=jpg'
+];
+function nextImg(el, style){
+  const list = JSON.parse(el.dataset.srcs);
+  const i = Number(el.dataset.i) + 1;
+  if (i < list.length) { el.dataset.i = i; el.src = list[i]; }
+  else { el.parentNode.insertAdjacentHTML('afterbegin','<div class="noimg">foto drīzumā<br>' + style + '</div>'); el.remove(); }
+}
+const fmt = n => n.toFixed(2).replace('.', ',');
+
+function reserveLink(s){
+  const msg = encodeURIComponent('Sveiki! Vēlos rezervēt: ' + s.name + ' (' + s.style + ') par €' + s.price + '. Vai ir pieejami izmēri?');
+  return CONFIG.reserveVia === 'whatsapp'
+    ? 'https://wa.me/' + CONFIG.whatsapp + '?text=' + msg
+    : CONFIG.instagram;
+}
+
+const grid = document.getElementById('grid');
+const emptyEl = document.getElementById('empty');
+const searchEl = document.getElementById('search');
+const sortEl = document.getElementById('sort');
+let activeCat = 'all';
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  let items = SHOES.filter(s =>
+    (activeCat === 'all' || (activeCat === 'slides') === isSlide(s)) &&
+    (!q || s.name.toLowerCase().includes(q) || s.style.toLowerCase().includes(q))
+  );
+  const mode = sortEl.value;
+  items.sort((a,b) =>
+    mode === 'pct'      ? pct(b) - pct(a) :
+    mode === 'priceAsc' ? a.price - b.price :
+    mode === 'priceDesc'? b.price - a.price :
+                          b.rrp - a.rrp
+  );
+
+  document.getElementById('count').textContent = items.length;
+  emptyEl.hidden = items.length > 0;
+  grid.innerHTML = items.map(s => `
+    <article class="card">
+      <div class="imgwrap">
+        <span class="pct-badge">−${pct(s)}%</span>
+        <img src="${imgSources(s)[0]}" data-srcs='${JSON.stringify(imgSources(s))}' data-i="0"
+             alt="${s.name}" loading="lazy" onerror="nextImg(this,'${s.style}')">
+      </div>
+      <div class="info">
+        <div class="name">${s.name}</div>
+        <div class="code">${s.style}</div>
+        <div class="prices">
+          <span class="rrp">€${fmt(s.rrp)}</span>
+          <span class="now">€${s.price}</span>
+        </div>
+      </div>
+      <a class="reserve" href="${reserveLink(s)}" target="_blank" rel="noopener">Rezervēt →</a>
+    </article>`).join('');
+}
+
+document.getElementById('chips').addEventListener('click', e => {
+  const btn = e.target.closest('.chip'); if (!btn) return;
+  activeCat = btn.dataset.cat;
+  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === btn));
+  render();
+});
+
+document.getElementById('share').addEventListener('click', async () => {
+  const data = { title: document.title, text: 'Jordan WMNS izpārdošana — atlaides līdz –72%, cenas no €19', url: location.href };
+  if (navigator.share) { try { await navigator.share(data); } catch(e){} }
+  else { await navigator.clipboard.writeText(location.href); document.getElementById('share').textContent = 'Saite nokopēta ✓'; }
+});
+
+searchEl.addEventListener('input', render);
+sortEl.addEventListener('change', render);
+render();
+</script>
+</body>
+</html>
