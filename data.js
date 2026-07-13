@@ -1,10 +1,12 @@
 // Shoe list — edit prices / remove sold-out styles here.
 // { style, name, rrp, price }  (optional img:"URL" to force a photo)
+// Optional sizes:[...] — US women's sizes in stock (as printed on the box end).
+// EU sizes are derived automatically from the Nike WMNS chart in index.html.
 const SHOES = [
   {style:"FD1643-300", name:"WMNS Air Jordan 6 Retro GTX", rrp:269.99, price:84},
   {style:"DQ0558-160", name:"WMNS Air Jordan 2 Retro SE", rrp:259.95, price:84},
   {style:"IB6716-100", name:"WMNS Air Jordan 4 Retro Tex", rrp:249.99, price:80},
-  {style:"AR0715-110", name:"WMNS Air Jordan 11 Retro", rrp:249.99, price:80},
+  {style:"AR0715-110", name:"WMNS Air Jordan 11 Retro", rrp:249.99, price:80, sizes:[8.5]},
   {style:"AR0715-010", name:"WMNS Air Jordan 11 Retro", rrp:249.99, price:74},
   {style:"DQ0560-160", name:"WMNS Air Jordan 2 Retro Low SE", rrp:249.95, price:80},
   {style:"DH4121-060", name:"WMNS Air Jordan 14 Retro Low", rrp:249.95, price:80},
@@ -34,7 +36,7 @@ const SHOES = [
   {style:"HF3184-100", name:"W Air Jordan 1 Brooklyn Low", rrp:189.99, price:64},
   {style:"HQ2005-100", name:"WMNS Air Jordan 1 Mid SE", rrp:179.99, price:64},
   {style:"IM5128-001", name:"WMNS Air Jordan 1 Mid SE", rrp:179.99, price:64},
-  {style:"IB7408-133", name:"WMNS Air Jordan 4 RM", rrp:179.99, price:64},
+  {style:"IB7408-133", name:"WMNS Air Jordan 4 RM", rrp:179.99, price:64, sizes:[6.5,7,7.5,8,9,9.5]},
   {style:"DR9631-801", name:"WMNS Jumpman Two Trey", rrp:179.99, price:64},
   {style:"DR9631-201", name:"WMNS Jumpman Two Trey", rrp:179.99, price:64},
   {style:"HJ4292-100", name:"WMNS Air Jordan Mule", rrp:179.99, price:94},
@@ -47,7 +49,7 @@ const SHOES = [
   {style:"DR9631-004", name:"WMNS Jumpman Two Trey", rrp:179.99, price:64},
   {style:"DV0427-301", name:"WMNS Air Jordan 1 Mid SE", rrp:179.99, price:94},
   {style:"DH7004-109", name:"WMNS Air Jordan 1 Elevate Low", rrp:169.99, price:54},
-  {style:"IM5129-010", name:"WMNS Air Jordan 1 Low SE", rrp:169.99, price:54},
+  {style:"IM5129-010", name:"WMNS Air Jordan 1 Low SE", rrp:169.99, price:54, sizes:[7.5,8,10]},
   {style:"FB2269-121", name:"WMNS Jordan Stadium 90", rrp:169.99, price:54},
   {style:"FB2269-160", name:"WMNS Jordan Stadium 90", rrp:169.99, price:54},
   {style:"FQ7827-100", name:"WMNS Air Jordan Legacy 312 Low", rrp:169.99, price:54},
