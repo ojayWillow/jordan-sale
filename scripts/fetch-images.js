@@ -1,6 +1,6 @@
-// Auto-fetches official product image URLs for every style code in data.js
-// and writes them to images.json. Run by GitHub Actions — no manual work.
-// Usage: node scripts/fetch-images.js
+// Auto-fetches official product image galleries for every style code in data.js
+// and writes them to images.json as { style: [url, url, ...] }. Run by GitHub
+// Actions — no manual work.  Usage: node scripts/fetch-images.js
 
 const fs = require('fs');
 const path = require('path');
@@ -16,12 +16,30 @@ const HEADERS = {
 
 // Nike.com storefront channel — required by the product_feed API, else it 400s.
 const CHANNEL_ID = 'd9a5bc42-4b9c-4976-858a-f159cf99c647';
+const MAX_IMAGES = 8; // gallery angles to keep per shoe
 
 const feedUrl = (code, marketplace, lang) =>
   `https://api.nike.com/product_feed/threads/v3/?filter=marketplace(${marketplace})&filter=language(${lang})&filter=channelId(${CHANNEL_ID})&filter=productInfo.merchProduct.styleColor(${code})`;
 
+// The PDP gallery lives in publishedContent.nodes -> a "carousel" node whose
+// child image nodes each carry a squarishURL/portraitURL.
+function galleryFrom(obj) {
+  const nodes = (obj && obj.publishedContent && obj.publishedContent.nodes) || [];
+  const carousel = nodes.find(n => (n.subType || n.type) === 'carousel');
+  const out = [];
+  if (carousel && Array.isArray(carousel.nodes)) {
+    for (const n of carousel.nodes) {
+      const p = n.properties || {};
+      const url = p.squarishURL || p.portraitURL || (p.image && p.image.url) || p.url;
+      if (url && !out.includes(url)) out.push(url);
+      if (out.length >= MAX_IMAGES) break;
+    }
+  }
+  return out;
+}
+
+// Fallback: walk the response for the first plausible single product image.
 function digForImage(obj) {
-  // Walk the response for the first plausible product image URL
   const found = [];
   (function walk(o) {
     if (!o || typeof o !== 'object' || found.length) return;
@@ -44,8 +62,10 @@ async function lookup(code) {
       if (!res.ok) continue;
       const json = await res.json();
       if (!json.objects || !json.objects.length) continue;
-      const url = digForImage(json.objects[0]);
-      if (url) return url;
+      const gallery = galleryFrom(json.objects[0]);
+      if (gallery.length) return gallery;
+      const single = digForImage(json.objects[0]);
+      if (single) return [single];
     } catch (e) { /* try next marketplace */ }
   }
   return null;
@@ -56,14 +76,16 @@ async function lookup(code) {
   let found = 0, skipped = 0, missing = 0;
 
   for (const code of codes) {
-    if (existing[code]) { skipped++; continue; } // already resolved earlier
-    const url = await lookup(code);
-    if (url) { existing[code] = url; found++; console.log(`OK   ${code}`); }
+    // Skip only if we already have a proper gallery array; re-fetch old
+    // single-string entries so they get upgraded to multi-image galleries.
+    if (Array.isArray(existing[code]) && existing[code].length) { skipped++; continue; }
+    const gallery = await lookup(code);
+    if (gallery) { existing[code] = gallery; found++; console.log(`OK   ${code}  (${gallery.length} img)`); }
     else { missing++; console.log(`MISS ${code}`); }
     await new Promise(r => setTimeout(r, 800)); // be polite to the API
   }
 
   fs.writeFileSync(OUT, JSON.stringify(existing, null, 2));
   console.log(`\nDone. New: ${found}, already had: ${skipped}, not found: ${missing}`);
-  console.log(`Total images: ${Object.keys(existing).length}/${codes.length}`);
+  console.log(`Total: ${Object.keys(existing).length}/${codes.length} styles with images`);
 })();

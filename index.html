@@ -107,6 +107,28 @@
   .del-note{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:12px}
 
   footer{max-width:1200px;margin:0 auto;padding:16px 18px 42px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);line-height:1.6}
+
+  /* ---------- Lightbox / gallery ---------- */
+  .imgwrap{cursor:zoom-in}
+  .lb{position:fixed;inset:0;z-index:100;background:rgba(16,16,16,.92);display:none;flex-direction:column;padding:14px}
+  .lb.open{display:flex}
+  .lb-top{display:flex;align-items:center;gap:12px;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:13px}
+  .lb-title{font-family:'Archivo',sans-serif;font-weight:700;text-transform:uppercase;font-size:15px}
+  .lb-close{margin-left:auto;background:var(--card);border:1.5px solid var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;padding:7px 13px;cursor:pointer}
+  .lb-close:hover{background:var(--marker)}
+  .lb-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;margin:12px 0}
+  .lb-stage img{max-width:100%;max-height:100%;object-fit:contain;background:#F7F7F4;mix-blend-mode:multiply}
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:var(--card);border:1.5px solid var(--ink);width:44px;height:44px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .lb-nav:hover{background:var(--marker)}
+  .lb-prev{left:4px} .lb-next{right:4px}
+  .lb-nav:focus-visible,.lb-close:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+  .lb-thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding-bottom:4px}
+  .lb-thumbs img{width:56px;height:56px;object-fit:contain;background:#F7F7F4;border:1.5px solid transparent;cursor:pointer;mix-blend-mode:multiply}
+  .lb-thumbs img.active{border-color:var(--marker)}
+  .lb-cta{display:flex;align-items:center;gap:14px;justify-content:center;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:14px;padding-top:6px;flex-wrap:wrap}
+  .lb-cta .lb-price{font-family:'Anton',sans-serif;font-size:24px;background:var(--marker);color:var(--ink);padding:2px 9px;transform:rotate(-1deg);display:inline-block}
+  .lb-cta a{background:var(--marker);color:var(--ink);text-decoration:none;font-weight:500;padding:9px 16px;border:1.5px solid var(--marker)}
+  .lb-cta a:hover{background:#fff;border-color:#fff}
 </style>
 </head>
 <body>
@@ -181,6 +203,25 @@
   Foto ielādējas automātiski pēc modeļa koda; ja foto vēl nav, tas parādīsies tuvākajā laikā.
 </footer>
 
+<!-- Product gallery lightbox -->
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Produkta galerija">
+  <div class="lb-top">
+    <span class="lb-title" id="lbTitle"></span>
+    <span class="lb-code" id="lbCode"></span>
+    <button class="lb-close" id="lbClose" aria-label="Aizvērt">Aizvērt ✕</button>
+  </div>
+  <div class="lb-stage">
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Iepriekšējais">‹</button>
+    <img id="lbImg" alt="">
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Nākamais">›</button>
+  </div>
+  <div class="lb-thumbs" id="lbThumbs"></div>
+  <div class="lb-cta">
+    <span class="lb-price" id="lbPrice"></span>
+    <a id="lbReserve" target="_blank" rel="noopener">Rezervēt →</a>
+  </div>
+</div>
+
 <script>
 // ============ IESTATĪJUMI — nomaini uz savējiem ============
 const CONFIG = {
@@ -200,9 +241,11 @@ const isSlide = s => /slide|mule/i.test(s.name);
 let SHOES = [];
 let IMG_MAP = {};
 
+// images.json entries are arrays of gallery URLs; tolerate legacy single strings.
+const asArr = v => Array.isArray(v) ? v : (v ? [v] : []);
+const galleryOf = s => [...asArr(IMG_MAP[s.style]), ...(s.img ? [s.img] : [])];
 const imgSources = s => [
-  ...(IMG_MAP[s.style] ? [IMG_MAP[s.style]] : []),
-  ...(s.img ? [s.img] : []),
+  ...galleryOf(s),
   'img/' + s.style + '.jpg',
   'https://secure-images.nike.com/is/image/DotCom/' + s.style.replace('-', '_') + '?wid=600&fmt=jpg'
 ];
@@ -258,8 +301,8 @@ function render(){
   document.getElementById('count').textContent = items.length;
   emptyEl.hidden = items.length > 0 || SHOES.length === 0;
   grid.innerHTML = items.map(s => `
-    <article class="card">
-      <div class="imgwrap">
+    <article class="card" data-style="${s.style}">
+      <div class="imgwrap" tabindex="0" role="button" aria-label="Skatīt ${s.name} attēlus">
         <span class="pct-badge">−${pct(s)}%</span>
         <img src="${imgSources(s)[0]}" data-srcs='${JSON.stringify(imgSources(s))}' data-i="0"
              alt="${s.name}" loading="lazy" onerror="nextImg(this,'${s.style}')">
@@ -286,9 +329,8 @@ document.getElementById('chips').addEventListener('click', e => {
 
 // Telegram personal accounts can't pre-fill from a link, so copy the reservation
 // text to the clipboard on click — the buyer pastes it into the opened chat.
-grid.addEventListener('click', e => {
-  const a = e.target.closest('.reserve');
-  if (!a || CONFIG.reserveVia !== 'telegram') return;
+function copyReserve(a){
+  if (CONFIG.reserveVia !== 'telegram') return;
   const msg = a.getAttribute('data-msg');
   if (msg && navigator.clipboard) {
     navigator.clipboard.writeText(msg).catch(()=>{});
@@ -296,6 +338,70 @@ grid.addEventListener('click', e => {
     a.textContent = 'Ziņa nokopēta ✓ atver Telegram…';
     setTimeout(() => { a.textContent = orig; }, 2500);
   }
+}
+grid.addEventListener('click', e => {
+  if (e.target.closest('.imgwrap')) {
+    const card = e.target.closest('.card');
+    if (card) openLightbox(card.dataset.style);
+    return;
+  }
+  const a = e.target.closest('.reserve');
+  if (a) copyReserve(a);
+});
+grid.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('imgwrap')) {
+    e.preventDefault();
+    const card = e.target.closest('.card');
+    if (card) openLightbox(card.dataset.style);
+  }
+});
+
+// ---------- Product gallery lightbox ----------
+const lb = document.getElementById('lb');
+let lbState = { imgs: [], i: 0, shoe: null };
+function openLightbox(style){
+  const s = SHOES.find(x => x.style === style); if (!s) return;
+  let imgs = galleryOf(s);
+  if (!imgs.length) imgs = [imgSources(s)[0]];
+  lbState = { imgs, i: 0, shoe: s };
+  document.getElementById('lbTitle').textContent = s.name;
+  document.getElementById('lbCode').textContent = s.style;
+  document.getElementById('lbPrice').textContent = '€' + s.price;
+  const a = document.getElementById('lbReserve');
+  a.href = reserveLink(s);
+  a.setAttribute('data-msg', reserveMsg(s));
+  renderLb();
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('lbClose').focus();
+}
+function renderLb(){
+  const { imgs, i, shoe } = lbState;
+  const img = document.getElementById('lbImg');
+  img.src = imgs[i];
+  img.alt = shoe.name + ' — attēls ' + (i + 1) + '/' + imgs.length;
+  const many = imgs.length > 1;
+  document.getElementById('lbPrev').style.display = many ? '' : 'none';
+  document.getElementById('lbNext').style.display = many ? '' : 'none';
+  document.getElementById('lbThumbs').innerHTML = many
+    ? imgs.map((u, idx) => `<img src="${u}" data-idx="${idx}" class="${idx === i ? 'active' : ''}" alt="">`).join('')
+    : '';
+}
+function lbGo(d){ const n = lbState.imgs.length; lbState.i = (lbState.i + d + n) % n; renderLb(); }
+function closeLightbox(){ lb.classList.remove('open'); document.body.style.overflow = ''; }
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev').addEventListener('click', () => lbGo(-1));
+document.getElementById('lbNext').addEventListener('click', () => lbGo(1));
+document.getElementById('lbThumbs').addEventListener('click', e => {
+  const t = e.target.closest('img'); if (t) { lbState.i = +t.dataset.idx; renderLb(); }
+});
+document.getElementById('lbReserve').addEventListener('click', function(){ copyReserve(this); });
+lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  else if (e.key === 'ArrowLeft') lbGo(-1);
+  else if (e.key === 'ArrowRight') lbGo(1);
 });
 
 document.getElementById('share').addEventListener('click', async () => {
