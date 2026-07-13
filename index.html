@@ -102,7 +102,9 @@
   .del-item h3{font-size:15px;font-weight:700;text-transform:uppercase;margin-bottom:5px}
   .del-item p{font-size:13.5px;line-height:1.45;color:#3d3d39}
   .del-item .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:block;margin-top:7px}
-  .del-note{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:14px}
+  .del-fee{font-size:16px;font-weight:600;margin-top:18px}
+  .del-fee .fee-hl{background:linear-gradient(100deg,transparent 1%,var(--marker) 6%,var(--marker) 94%,transparent 99%);padding:1px 7px;display:inline-block;transform:rotate(-1deg)}
+  .del-note{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:12px}
 
   footer{max-width:1200px;margin:0 auto;padding:16px 18px 42px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);line-height:1.6}
 </style>
@@ -169,7 +171,8 @@
         <span class="tag">bezmaksas</span>
       </div>
     </div>
-    <p class="del-note">Piegādes maksa un pakomāta izvēle tiek precizēta, apstiprinot rezervāciju.</p>
+    <p class="del-fee">Piegāde <span class="fee-hl">€3,99</span> uz pakomātu · bezmaksas no <b>€120</b></p>
+    <p class="del-note">Pakomāta izvēli (Omniva / DPD / Venipak) precizē, apstiprinot rezervāciju Telegram.</p>
   </div>
 </section>
 
@@ -212,7 +215,11 @@ function nextImg(el, style){
 const fmt = n => n.toFixed(2).replace('.', ',');
 
 function reserveMsg(s){
-  return 'Sveiki! Vēlos rezervēt: ' + s.name + ' (' + s.style + ') par €' + s.price + '. Vai ir pieejami izmēri?';
+  return 'Sveiki! Vēlos rezervēt:\n'
+       + s.name + ' (' + s.style + ') — €' + s.price + '\n'
+       + 'Mans izmērs (EU): \n'
+       + 'Piegādes pakomāts (Omniva / DPD / Venipak): \n'
+       + '(Piegāde €3.99, bezmaksas no €120)';
 }
 function reserveLink(s){
   const msg = encodeURIComponent(reserveMsg(s));
