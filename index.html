@@ -116,27 +116,43 @@
 
   footer{max-width:1200px;margin:0 auto;padding:16px 18px 42px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);line-height:1.6}
 
-  /* ---------- Lightbox / gallery ---------- */
+  /* ---------- Lightbox / quick-view gallery ---------- */
   .imgwrap{cursor:zoom-in}
-  .lb{position:fixed;inset:0;z-index:100;background:rgba(16,16,16,.92);display:none;flex-direction:column;padding:14px}
+  .lb{position:fixed;inset:0;z-index:100;background:rgba(16,16,16,.55);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
   .lb.open{display:flex}
-  .lb-top{display:flex;align-items:center;gap:12px;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:13px}
-  .lb-title{font-family:'Archivo',sans-serif;font-weight:700;text-transform:uppercase;font-size:15px}
-  .lb-close{margin-left:auto;background:var(--card);border:1.5px solid var(--ink);font-family:'IBM Plex Mono',monospace;font-size:14px;padding:7px 13px;cursor:pointer}
+  .lb-card{position:relative;background:var(--card);border:2px solid var(--ink);width:100%;max-width:940px;max-height:90vh;display:grid;grid-template-columns:1.15fr .85fr;overflow:hidden}
+  .lb-close{position:absolute;top:10px;right:10px;z-index:3;background:var(--card);border:1.5px solid var(--ink);width:34px;height:34px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
   .lb-close:hover{background:var(--marker)}
-  .lb-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:0;margin:12px 0}
-  .lb-stage img{max-width:100%;max-height:100%;object-fit:contain;background:#F7F7F4;mix-blend-mode:multiply}
-  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:var(--card);border:1.5px solid var(--ink);width:44px;height:44px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  /* gallery side */
+  .lb-gallery{display:flex;flex-direction:column;border-right:1.5px solid var(--line);min-width:0}
+  .lb-stage{position:relative;aspect-ratio:1/1;background:#F7F7F4;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .lb-stage img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+  .lb-badge{position:absolute;top:10px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;background:var(--ink);color:var(--marker);padding:3px 8px;z-index:2}
+  .lb-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.9);border:1.5px solid var(--ink);width:38px;height:38px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
   .lb-nav:hover{background:var(--marker)}
-  .lb-prev{left:4px} .lb-next{right:4px}
-  .lb-nav:focus-visible,.lb-close:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
-  .lb-thumbs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding-bottom:4px}
-  .lb-thumbs img{width:56px;height:56px;object-fit:contain;background:#F7F7F4;border:1.5px solid transparent;cursor:pointer;mix-blend-mode:multiply}
-  .lb-thumbs img.active{border-color:var(--marker)}
-  .lb-cta{display:flex;align-items:center;gap:14px;justify-content:center;color:#fff;font-family:'IBM Plex Mono',monospace;font-size:14px;padding-top:6px;flex-wrap:wrap}
-  .lb-cta .lb-price{font-family:'Anton',sans-serif;font-size:24px;background:var(--marker);color:var(--ink);padding:2px 9px;transform:rotate(-1deg);display:inline-block}
-  .lb-cta a{background:var(--marker);color:var(--ink);text-decoration:none;font-weight:500;padding:9px 16px;border:1.5px solid var(--marker)}
-  .lb-cta a:hover{background:#fff;border-color:#fff}
+  .lb-prev{left:8px} .lb-next{right:8px}
+  .lb-nav:focus-visible,.lb-close:focus-visible,.lb-thumbs img:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+  .lb-thumbs{display:flex;gap:7px;padding:10px;overflow-x:auto;border-top:1.5px solid var(--line)}
+  .lb-thumbs img{width:54px;height:54px;flex:0 0 auto;object-fit:contain;background:#F7F7F4;border:1.5px solid var(--line);cursor:pointer;mix-blend-mode:multiply}
+  .lb-thumbs img.active{border-color:var(--ink)}
+  /* info side */
+  .lb-info{padding:26px 24px;display:flex;flex-direction:column;gap:10px;overflow-y:auto}
+  .lb-info .lb-code{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted)}
+  .lb-title{font-family:'Anton',sans-serif;font-size:clamp(22px,3vw,30px);line-height:1.02;text-transform:uppercase;letter-spacing:.3px}
+  .lb-prices{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:2px}
+  .lb-rrp{font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--muted);text-decoration:line-through}
+  .lb-now{font-family:'Anton',sans-serif;font-size:36px;line-height:1;background:linear-gradient(100deg,transparent 1%,var(--marker) 6%,var(--marker) 94%,transparent 99%);padding:2px 10px 4px;transform:rotate(-1deg);display:inline-block}
+  .lb-reserve{display:block;text-align:center;text-decoration:none;color:var(--ink);font-weight:600;font-size:15px;border:1.5px solid var(--ink);background:var(--marker);padding:13px;margin-top:8px;transition:box-shadow .12s ease,transform .12s ease}
+  .lb-reserve:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+  .lb-reserve:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .lb-note{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+  @media (max-width:720px){
+    .lb{padding:0}
+    .lb-card{grid-template-columns:1fr;max-width:none;width:100%;height:100%;max-height:100%;border:0}
+    .lb-gallery{border-right:0}
+    .lb-info{padding:18px 18px 30px}
+    .lb-title{font-size:22px}
+  }
 </style>
 </head>
 <body>
@@ -220,22 +236,29 @@
   Foto ielādējas automātiski pēc modeļa koda; ja foto vēl nav, tas parādīsies tuvākajā laikā.
 </footer>
 
-<!-- Product gallery lightbox -->
+<!-- Product quick-view gallery -->
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Produkta galerija">
-  <div class="lb-top">
-    <span class="lb-title" id="lbTitle"></span>
-    <span class="lb-code" id="lbCode"></span>
-    <button class="lb-close" id="lbClose" aria-label="Aizvērt">Aizvērt ✕</button>
-  </div>
-  <div class="lb-stage">
-    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Iepriekšējais">‹</button>
-    <img id="lbImg" alt="">
-    <button class="lb-nav lb-next" id="lbNext" aria-label="Nākamais">›</button>
-  </div>
-  <div class="lb-thumbs" id="lbThumbs"></div>
-  <div class="lb-cta">
-    <span class="lb-price" id="lbPrice"></span>
-    <a id="lbReserve" target="_blank" rel="noopener">Rezervēt →</a>
+  <div class="lb-card">
+    <button class="lb-close" id="lbClose" aria-label="Aizvērt">✕</button>
+    <div class="lb-gallery">
+      <div class="lb-stage">
+        <span class="lb-badge" id="lbBadge"></span>
+        <button class="lb-nav lb-prev" id="lbPrev" aria-label="Iepriekšējais">‹</button>
+        <img id="lbImg" alt="">
+        <button class="lb-nav lb-next" id="lbNext" aria-label="Nākamais">›</button>
+      </div>
+      <div class="lb-thumbs" id="lbThumbs"></div>
+    </div>
+    <div class="lb-info">
+      <div class="lb-code" id="lbCode"></div>
+      <h3 class="lb-title" id="lbTitle"></h3>
+      <div class="lb-prices">
+        <span class="lb-rrp" id="lbRrp"></span>
+        <span class="lb-now" id="lbPrice"></span>
+      </div>
+      <a class="lb-reserve" id="lbReserve" target="_blank" rel="noopener">Rezervēt →</a>
+      <p class="lb-note">Izmēru un pakomātu (Omniva / DPD / Venipak) precizē Telegram čatā. Piegāde €3,99.</p>
+    </div>
   </div>
 </div>
 
@@ -383,6 +406,8 @@ function openLightbox(style){
   lbState = { imgs, i: 0, shoe: s };
   document.getElementById('lbTitle').textContent = s.name;
   document.getElementById('lbCode').textContent = s.style;
+  document.getElementById('lbBadge').textContent = '−' + pct(s) + '%';
+  document.getElementById('lbRrp').textContent = '€' + fmt(s.rrp);
   document.getElementById('lbPrice').textContent = '€' + s.price;
   const a = document.getElementById('lbReserve');
   a.href = reserveLink(s);
