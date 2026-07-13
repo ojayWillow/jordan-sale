@@ -181,9 +181,10 @@
 <script>
 // ============ IESTATĪJUMI — nomaini uz savējiem ============
 const CONFIG = {
+  telegram: "ojaywillow",               // Telegram @lietotājvārds vai bota nosaukums (bez "@")
   whatsapp: "37120000000",              // savs numurs bez "+"
   instagram: "https://instagram.com/tavs_veikals",
-  reserveVia: "whatsapp"                // "whatsapp" vai "instagram"
+  reserveVia: "telegram"                // "telegram", "whatsapp" vai "instagram"
 };
 // ============================================================
 
@@ -210,11 +211,21 @@ function nextImg(el, style){
 }
 const fmt = n => n.toFixed(2).replace('.', ',');
 
+function reserveMsg(s){
+  return 'Sveiki! Vēlos rezervēt: ' + s.name + ' (' + s.style + ') par €' + s.price + '. Vai ir pieejami izmēri?';
+}
 function reserveLink(s){
-  const msg = encodeURIComponent('Sveiki! Vēlos rezervēt: ' + s.name + ' (' + s.style + ') par €' + s.price + '. Vai ir pieejami izmēri?');
-  return CONFIG.reserveVia === 'whatsapp'
-    ? 'https://wa.me/' + CONFIG.whatsapp + '?text=' + msg
-    : CONFIG.instagram;
+  const msg = encodeURIComponent(reserveMsg(s));
+  switch (CONFIG.reserveVia) {
+    case 'telegram':
+      // Personal account: opens the chat (no pre-fill possible via link) — the card's
+      // click handler copies the reservation text to the clipboard so the buyer pastes it.
+      return 'https://t.me/' + CONFIG.telegram;
+    case 'instagram':
+      return CONFIG.instagram;
+    default: // whatsapp
+      return 'https://wa.me/' + CONFIG.whatsapp + '?text=' + msg;
+  }
 }
 
 const grid = document.getElementById('grid');
@@ -254,7 +265,8 @@ function render(){
           <span class="now">€${s.price}</span>
         </div>
       </div>
-      <a class="reserve" href="${reserveLink(s)}" target="_blank" rel="noopener">Rezervēt →</a>
+      <a class="reserve" href="${reserveLink(s)}" target="_blank" rel="noopener"
+         data-msg="${reserveMsg(s).replace(/"/g,'&quot;')}">Rezervēt →</a>
     </article>`).join('');
 }
 
@@ -263,6 +275,20 @@ document.getElementById('chips').addEventListener('click', e => {
   activeCat = btn.dataset.cat;
   document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === btn));
   render();
+});
+
+// Telegram personal accounts can't pre-fill from a link, so copy the reservation
+// text to the clipboard on click — the buyer pastes it into the opened chat.
+grid.addEventListener('click', e => {
+  const a = e.target.closest('.reserve');
+  if (!a || CONFIG.reserveVia !== 'telegram') return;
+  const msg = a.getAttribute('data-msg');
+  if (msg && navigator.clipboard) {
+    navigator.clipboard.writeText(msg).catch(()=>{});
+    const orig = a.textContent;
+    a.textContent = 'Ziņa nokopēta ✓ atver Telegram…';
+    setTimeout(() => { a.textContent = orig; }, 2500);
+  }
 });
 
 document.getElementById('share').addEventListener('click', async () => {
