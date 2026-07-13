@@ -178,7 +178,6 @@
   Foto ielādējas automātiski pēc modeļa koda; ja foto vēl nav, tas parādīsies tuvākajā laikā.
 </footer>
 
-<script src="data.js"></script>
 <script>
 // ============ IESTATĪJUMI — nomaini uz savējiem ============
 const CONFIG = {
@@ -191,10 +190,11 @@ const CONFIG = {
 const pct = s => Math.round((1 - s.price / s.rrp) * 100);
 const isSlide = s => /slide|mule/i.test(s.name);
 
-// Auto-fetched official photo URLs (written by the GitHub robot into images.json)
+// Shoe list + official photo URLs are loaded at runtime with no-cache so that
+// price changes (data.js) and the weekly photo refresh (images.json) always
+// reach returning visitors — a plain <script src> would be served stale from cache.
+let SHOES = [];
 let IMG_MAP = {};
-// no-cache: images.json is refreshed weekly by the GitHub robot — always revalidate so returning visitors get fresh photos
-fetch('images.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : {}).then(m => { IMG_MAP = m; render(); }).catch(()=>{});
 
 const imgSources = s => [
   ...(IMG_MAP[s.style] ? [IMG_MAP[s.style]] : []),
@@ -238,7 +238,7 @@ function render(){
   );
 
   document.getElementById('count').textContent = items.length;
-  emptyEl.hidden = items.length > 0;
+  emptyEl.hidden = items.length > 0 || SHOES.length === 0;
   grid.innerHTML = items.map(s => `
     <article class="card">
       <div class="imgwrap">
@@ -273,7 +273,23 @@ document.getElementById('share').addEventListener('click', async () => {
 
 searchEl.addEventListener('input', render);
 sortEl.addEventListener('change', render);
-render();
+
+// Load data.js (shoe list) + images.json fresh, then render. data.js is evaluated
+// through a module wrapper so the same file keeps working in Node (the image bot).
+async function boot(){
+  try {
+    const [dataSrc, imgMap] = await Promise.all([
+      fetch('data.js', { cache: 'no-cache' }).then(r => r.text()),
+      fetch('images.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : {}).catch(() => ({}))
+    ]);
+    const mod = {};
+    new Function('module', dataSrc)(mod);   // runs `module.exports = SHOES` from data.js
+    SHOES = mod.exports || [];
+    IMG_MAP = imgMap || {};
+  } catch (e) { /* leave lists empty — page shows the empty state */ }
+  render();
+}
+boot();
 </script>
 </body>
 </html>
