@@ -1,0 +1,66 @@
+/* Shared base for thread.html + admin.html — mirrors index.html's design tokens. */
+:root{
+  --bg:#F2F2EE; --card:#FFFFFF; --ink:#101010;
+  --muted:#82827D; --marker:#C8F551; --line:#E3E3DC;
+  --ok:#1f7a3d; --warn:#b8860b; --bad:#a12;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+body{background:var(--bg);color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased;line-height:1.4}
+a{color:inherit}
+img{max-width:100%}
+
+.wrap{max-width:820px;margin:0 auto;padding:18px}
+.topbar{border-bottom:2px solid var(--ink);background:var(--bg)}
+.topbar-inner{max-width:820px;margin:0 auto;padding:16px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;letter-spacing:.5px;text-decoration:none}
+.brand .hl{background:linear-gradient(104deg,transparent 2%,var(--marker) 5%,var(--marker) 95%,transparent 98%);padding:0 7px;display:inline-block;transform:rotate(-1deg)}
+.spacer{flex:1}
+
+.mono{font-family:'IBM Plex Mono',monospace}
+.muted{color:var(--muted)}
+
+/* Buttons / inputs */
+.btn{
+  font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;
+  border:1.5px solid var(--ink);background:var(--card);color:var(--ink);
+  padding:10px 14px;cursor:pointer;border-radius:0;
+  transition:box-shadow .12s ease, transform .12s ease;
+}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+.btn:focus-visible{outline:3px solid var(--marker);outline-offset:2px}
+.btn-primary{background:var(--marker)}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+input,select,textarea{
+  font-family:'IBM Plex Mono',monospace;font-size:14px;padding:10px 12px;
+  border:1.5px solid var(--ink);border-radius:0;background:var(--card);color:var(--ink);width:100%;
+}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--marker);outline-offset:1px}
+label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 5px}
+
+/* Cards / panels */
+.panel{background:var(--card);border:1.5px solid var(--ink)}
+.pad{padding:16px}
+
+/* Status badge */
+.badge{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border:1.5px solid var(--ink);display:inline-block}
+.badge[data-s="new"]{background:var(--marker)}
+.badge[data-s="contacted"]{background:#e7e7e0}
+.badge[data-s="reserved"]{background:#dfe9ff}
+.badge[data-s="paid"]{background:#d8f5df}
+.badge[data-s="shipped"]{background:#e9dcff}
+.badge[data-s="cancelled"]{background:#f4dada;text-decoration:line-through}
+
+/* Chat */
+.chat{display:flex;flex-direction:column;gap:8px;padding:14px;overflow-y:auto}
+.msg{max-width:78%;padding:8px 11px;border:1.5px solid var(--ink);font-size:14px;line-height:1.35;white-space:pre-wrap;word-break:break-word}
+.msg .meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px}
+.msg.buyer{align-self:flex-start;background:var(--card)}
+.msg.admin{align-self:flex-end;background:var(--marker)}
+.msg.system{align-self:center;background:transparent;border:0;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.composer{display:flex;gap:8px;border-top:1.5px solid var(--ink);padding:12px;background:var(--card)}
+.composer textarea{resize:none;height:44px;min-height:44px}
+
+.size-chip{font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.1;border:1px solid var(--line);padding:3px 6px;display:inline-flex;gap:4px;align-items:baseline}
+.size-chip i{font-style:normal;color:var(--muted);font-size:9.5px}

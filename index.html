@@ -97,9 +97,9 @@
     padding:2px 7px 3px;transform:rotate(-1deg);display:inline-block;
   }
   .reserve{
-    display:block;text-align:center;text-decoration:none;color:var(--ink);
-    font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;
-    border-top:1.5px solid var(--ink);padding:9px;background:var(--card);
+    display:block;width:100%;text-align:center;text-decoration:none;color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500;cursor:pointer;
+    border:0;border-top:1.5px solid var(--ink);padding:9px;background:var(--card);
   }
   .reserve:hover{background:var(--marker)}
   .reserve:focus-visible{outline:3px solid var(--marker);outline-offset:-4px}
@@ -154,6 +154,37 @@
   .lb-sizes .size-chip{font-size:12.5px;padding:5px 8px}
   .lb-sizes .size-chip i{font-size:11px}
   .lb-note{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+
+  /* ---------- Reservation modal ---------- */
+  .rz{position:fixed;inset:0;z-index:120;background:rgba(16,16,16,.55);display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+  .rz.open{display:flex}
+  .rz-card{position:relative;background:var(--card);border:2px solid var(--ink);width:100%;max-width:440px;max-height:92vh;overflow-y:auto}
+  .rz-head{padding:18px 20px 12px;border-bottom:1.5px solid var(--line)}
+  .rz-code{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+  .rz-title{font-family:'Anton',sans-serif;font-size:22px;text-transform:uppercase;line-height:1.05;margin-top:2px}
+  .rz-price{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);margin-top:4px}
+  .rz-price b{color:var(--ink);font-weight:600}
+  .rz-body{padding:16px 20px 20px;display:flex;flex-direction:column;gap:13px}
+  .rz-body label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 5px}
+  .rz-body input,.rz-body textarea{font-family:'IBM Plex Mono',monospace;font-size:14px;padding:10px 12px;border:1.5px solid var(--ink);border-radius:0;background:var(--card);color:var(--ink);width:100%}
+  .rz-body textarea{resize:vertical;min-height:58px}
+  .rz-body input:focus,.rz-body textarea:focus,.rz-sizes button:focus-visible{outline:3px solid var(--marker);outline-offset:1px}
+  .rz-sizes{display:flex;flex-wrap:wrap;gap:6px}
+  .rz-sizes button{font-family:'IBM Plex Mono',monospace;font-size:13px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);padding:7px 10px;cursor:pointer;display:inline-flex;gap:5px;align-items:baseline}
+  .rz-sizes button i{font-style:normal;color:var(--muted);font-size:10.5px}
+  .rz-sizes button[aria-pressed="true"]{background:var(--ink);color:var(--marker)}
+  .rz-sizes button[aria-pressed="true"] i{color:var(--marker)}
+  .rz-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+  .rz-submit{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;border:1.5px solid var(--ink);background:var(--marker);color:var(--ink);padding:13px;cursor:pointer;transition:box-shadow .12s ease,transform .12s ease}
+  .rz-submit:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+  .rz-submit[disabled]{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+  .rz-close{position:absolute;top:10px;right:10px;background:var(--card);border:1.5px solid var(--ink);width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;z-index:2}
+  .rz-close:hover{background:var(--marker)}
+  .rz-err{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#a12;min-height:1px}
+  .rz-note{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);line-height:1.5}
+  .myres-link{font-family:'IBM Plex Mono',monospace;font-size:13px;border:1.5px solid var(--ink);background:var(--card);padding:9px 14px;cursor:pointer;text-decoration:none;color:var(--ink)}
+  .myres-link:hover{background:var(--marker)}
+
   @media (max-width:720px){
     .lb{padding:0}
     .lb-card{grid-template-columns:1fr;max-width:none;width:100%;height:100%;max-height:100%;border:0}
@@ -174,6 +205,7 @@
       <span class="stat">cenas no <b>€24</b></span>
       <span class="stat">piegāde visā <b>Latvijā</b></span>
       <button class="share-btn" id="share">Dalīties ↗</button>
+      <a class="myres-link" id="myResLink" href="#" hidden>Manas rezervācijas</a>
     </div>
   </div>
 </section>
@@ -234,8 +266,8 @@
       </div>
     </div>
     <p class="del-fee">Piegāde <span class="fee-hl">€3,99</span> uz pakomātu visā Latvijā</p>
-    <p class="del-note">Pakomāta izvēli (Omniva / DPD / Venipak) precizē, apstiprinot rezervāciju Telegram.<br>
-    Izmēra vai preces maiņa iespējama nevalkātām precēm — sazinoties Telegram.</p>
+    <p class="del-note">Pakomāta izvēli (Omniva / DPD / Venipak) precizē pēc rezervācijas — čatā tieši mūsu mājaslapā.<br>
+    Izmēra vai preces maiņa iespējama nevalkātām precēm — uzraksti mums čatā.</p>
   </div>
 </section>
 
@@ -266,21 +298,52 @@
       </div>
       <div class="size-lbl" id="lbSizesLbl" hidden>Pieejamie izmēri (US · EU)</div>
       <div class="lb-sizes" id="lbSizes"></div>
-      <a class="lb-reserve" id="lbReserve" target="_blank" rel="noopener">Rezervēt →</a>
-      <p class="lb-note">Izmēru un pakomātu (Omniva / DPD / Venipak) precizē Telegram čatā. Piegāde €3,99.</p>
+      <a class="lb-reserve" id="lbReserve" href="#" role="button">Rezervēt →</a>
+      <p class="lb-note">Rezervē zemāk — izmēru un pakomātu (Omniva / DPD / Venipak) precizē čatā tieši šeit mājaslapā. Piegāde €3,99.</p>
     </div>
   </div>
 </div>
 
+<!-- Reservation modal -->
+<div class="rz" id="rz" role="dialog" aria-modal="true" aria-label="Rezervācija">
+  <div class="rz-card">
+    <button class="rz-close" id="rzClose" aria-label="Aizvērt">✕</button>
+    <div class="rz-head">
+      <div class="rz-code" id="rzCode"></div>
+      <div class="rz-title" id="rzTitle"></div>
+      <div class="rz-price" id="rzPrice"></div>
+    </div>
+    <form class="rz-body" id="rzForm">
+      <div id="rzSizeWrap">
+        <label for="rzSizes">Izmērs</label>
+        <div class="rz-sizes" id="rzSizes" role="group" aria-label="Izmērs"></div>
+      </div>
+      <div>
+        <label for="rzName">Vārds *</label>
+        <input id="rzName" name="name" type="text" autocomplete="name" maxlength="80" required>
+      </div>
+      <div>
+        <label for="rzContact">Kontakts (e-pasts / tālrunis — neobligāts)</label>
+        <input id="rzContact" name="contact" type="text" maxlength="160" autocomplete="off">
+      </div>
+      <div>
+        <label for="rzNote">Piezīme (neobligāta)</label>
+        <textarea id="rzNote" name="note" maxlength="500"></textarea>
+      </div>
+      <!-- honeypot: real users never see or fill this -->
+      <input class="rz-hp" id="rzHp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="rz-err" id="rzErr" role="alert"></div>
+      <button class="rz-submit" id="rzSubmit" type="submit">Rezervēt →</button>
+      <p class="rz-note">Pēc rezervācijas atvērsies tavs privātais čats ar veikalu — bez citām lietotnēm. Piegāde €3,99.</p>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script>
-// ============ IESTATĪJUMI — nomaini uz savējiem ============
-const CONFIG = {
-  telegram: "ojaywillow",               // Telegram @lietotājvārds vai bota nosaukums (bez "@")
-  whatsapp: "37120000000",              // savs numurs bez "+"
-  instagram: "https://instagram.com/tavs_veikals",
-  reserveVia: "telegram"                // "telegram", "whatsapp" vai "instagram"
-};
-// ============================================================
+// Reservations + chat now happen in-house (see supabase-config.js + thread.html).
+// No external messaging app is used.
 
 const pct = s => Math.round((1 - s.price / s.rrp) * 100);
 const isSlide = s => /slide|mule/i.test(s.name);
@@ -321,25 +384,22 @@ function nextImg(el, style){
 }
 const fmt = n => n.toFixed(2).replace('.', ',');
 
-function reserveMsg(s){
-  return 'Sveiki! Vēlos rezervēt:\n'
-       + s.name + ' (' + s.style + ') — €' + s.price + '\n'
-       + 'Mans izmērs (EU): \n'
-       + 'Piegādes pakomāts (Omniva / DPD / Venipak): \n'
-       + '(Piegāde €3.99)';
+// ---- Saved reservations (localStorage) — lets a buyer return to their threads.
+const LS_KEY = 'jordanReservations';
+function savedReservations(){
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e){ return []; }
 }
-function reserveLink(s){
-  const msg = encodeURIComponent(reserveMsg(s));
-  switch (CONFIG.reserveVia) {
-    case 'telegram':
-      // Personal account: opens the chat (no pre-fill possible via link) — the card's
-      // click handler copies the reservation text to the clipboard so the buyer pastes it.
-      return 'https://t.me/' + CONFIG.telegram;
-    case 'instagram':
-      return CONFIG.instagram;
-    default: // whatsapp
-      return 'https://wa.me/' + CONFIG.whatsapp + '?text=' + msg;
-  }
+function saveReservation(rec){
+  const list = savedReservations().filter(r => r.token !== rec.token);
+  list.unshift(rec);
+  try { localStorage.setItem(LS_KEY, JSON.stringify(list.slice(0, 40))); } catch(e){}
+  refreshMyResLink();
+}
+function refreshMyResLink(){
+  const link = document.getElementById('myResLink');
+  const list = savedReservations();
+  if (list.length){ link.hidden = false; link.textContent = 'Manas rezervācijas (' + list.length + ')'; }
+  else { link.hidden = true; }
 }
 
 const grid = document.getElementById('grid');
@@ -380,8 +440,7 @@ function render(){
           <span class="now">€${s.price}</span>
         </div>
       </div>
-      <a class="reserve" href="${reserveLink(s)}" target="_blank" rel="noopener"
-         data-msg="${reserveMsg(s).replace(/"/g,'&quot;')}">Rezervēt →</a>
+      <button class="reserve" type="button">Rezervēt →</button>
     </article>`).join('');
 }
 
@@ -392,26 +451,17 @@ document.getElementById('chips').addEventListener('click', e => {
   render();
 });
 
-// Telegram personal accounts can't pre-fill from a link, so copy the reservation
-// text to the clipboard on click — the buyer pastes it into the opened chat.
-function copyReserve(a){
-  if (CONFIG.reserveVia !== 'telegram') return;
-  const msg = a.getAttribute('data-msg');
-  if (msg && navigator.clipboard) {
-    navigator.clipboard.writeText(msg).catch(()=>{});
-    const orig = a.textContent;
-    a.textContent = 'Ziņa nokopēta ✓ atver Telegram…';
-    setTimeout(() => { a.textContent = orig; }, 2500);
-  }
-}
 grid.addEventListener('click', e => {
   if (e.target.closest('.imgwrap')) {
     const card = e.target.closest('.card');
     if (card) openLightbox(card.dataset.style);
     return;
   }
-  const a = e.target.closest('.reserve');
-  if (a) copyReserve(a);
+  const rb = e.target.closest('.reserve');
+  if (rb) {
+    const card = e.target.closest('.card');
+    if (card) openReserve(card.dataset.style);
+  }
 });
 grid.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('imgwrap')) {
@@ -437,9 +487,6 @@ function openLightbox(style){
   const hasSizes = s.sizes && s.sizes.length;
   document.getElementById('lbSizesLbl').hidden = !hasSizes;
   document.getElementById('lbSizes').innerHTML = hasSizes ? sizeChips(s) : '';
-  const a = document.getElementById('lbReserve');
-  a.href = reserveLink(s);
-  a.setAttribute('data-msg', reserveMsg(s));
   renderLb();
   lb.classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -465,7 +512,12 @@ document.getElementById('lbNext').addEventListener('click', () => lbGo(1));
 document.getElementById('lbThumbs').addEventListener('click', e => {
   const t = e.target.closest('img'); if (t) { lbState.i = +t.dataset.idx; renderLb(); }
 });
-document.getElementById('lbReserve').addEventListener('click', function(){ copyReserve(this); });
+document.getElementById('lbReserve').addEventListener('click', function(e){
+  e.preventDefault();
+  const s = lbState.shoe;
+  closeLightbox();
+  if (s) openReserve(s.style);
+});
 lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => {
   if (!lb.classList.contains('open')) return;
@@ -482,6 +534,108 @@ document.getElementById('share').addEventListener('click', async () => {
 
 searchEl.addEventListener('input', render);
 sortEl.addEventListener('change', render);
+
+// ---------- Reservation modal ----------
+const rz = document.getElementById('rz');
+const rzForm = document.getElementById('rzForm');
+const rzErr = document.getElementById('rzErr');
+const rzSubmit = document.getElementById('rzSubmit');
+let rzState = { shoe: null, sizeUs: null, sizeEu: null };
+
+function openReserve(style){
+  const s = SHOES.find(x => x.style === style); if (!s) return;
+  rzState = { shoe: s, sizeUs: null, sizeEu: null };
+  document.getElementById('rzCode').textContent = s.style;
+  document.getElementById('rzTitle').textContent = s.name;
+  document.getElementById('rzPrice').innerHTML =
+    '<b>€' + s.price + '</b> &nbsp;<span style="text-decoration:line-through">€' + fmt(s.rrp) + '</span> &nbsp;−' + pct(s) + '%';
+  rzForm.reset();
+  rzErr.textContent = '';
+  rzSubmit.disabled = false;
+  rzSubmit.textContent = 'Rezervēt →';
+
+  // Size chips: pick from available sizes, else a single "ask size" option.
+  const wrap = document.getElementById('rzSizes');
+  const sizes = (s.sizes && s.sizes.length) ? [...s.sizes].sort((a,b)=>a-b) : [];
+  if (sizes.length){
+    wrap.innerHTML = sizes.map(us =>
+      `<button type="button" data-us="${us}" data-eu="${euOf(us)!=null?euOf(us):''}" aria-pressed="false">${us}<i>EU ${euOf(us)!=null?euOf(us):'—'}</i></button>`
+    ).join('');
+  } else {
+    wrap.innerHTML = `<button type="button" data-us="" data-eu="" data-ask="1" aria-pressed="true">Jautāt izmēru</button>`;
+    rzState.sizeUs = ''; rzState.sizeEu = '';
+  }
+  document.getElementById('rzSizeWrap').style.display = '';
+
+  rz.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('rzName').focus(), 30);
+}
+function closeReserve(){ rz.classList.remove('open'); document.body.style.overflow = ''; }
+
+document.getElementById('rzSizes').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#rzSizes button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  rzState.sizeUs = b.dataset.us || '';
+  rzState.sizeEu = b.dataset.eu || '';
+});
+document.getElementById('rzClose').addEventListener('click', closeReserve);
+rz.addEventListener('click', e => { if (e.target === rz) closeReserve(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && rz.classList.contains('open')) closeReserve(); });
+
+rzForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  rzErr.textContent = '';
+  const s = rzState.shoe; if (!s) return;
+  const name = document.getElementById('rzName').value.trim();
+  const contact = document.getElementById('rzContact').value.trim();
+  const note = document.getElementById('rzNote').value.trim();
+  const hp = document.getElementById('rzHp').value;             // honeypot
+
+  if (hp) { closeReserve(); return; }                            // silently drop bots
+  if (!name){ rzErr.textContent = 'Lūdzu ievadi vārdu.'; return; }
+  const hasSizes = s.sizes && s.sizes.length;
+  if (hasSizes && rzState.sizeUs == null){ rzErr.textContent = 'Lūdzu izvēlies izmēru.'; return; }
+
+  const client = window.getSupabase && window.getSupabase();
+  if (!client){
+    rzErr.textContent = 'Rezervāciju sistēma vēl nav aktivizēta. Lūdzu mēģini vēlāk.';
+    return;
+  }
+
+  rzSubmit.disabled = true;
+  rzSubmit.textContent = 'Rezervē…';
+  try {
+    const { data, error } = await client.rpc('create_reservation', {
+      p_shoe_style: s.style, p_shoe_name: s.name, p_price: s.price,
+      p_size_us: rzState.sizeUs || null, p_size_eu: rzState.sizeEu || null,
+      p_buyer_name: name, p_buyer_contact: contact || null, p_note: note || null
+    });
+    if (error) throw error;
+    const token = data;
+    saveReservation({ token, style: s.style, name: s.name, price: s.price,
+      sizeUs: rzState.sizeUs || '', sizeEu: rzState.sizeEu || '', at: new Date().toISOString() });
+    location.href = 'thread.html?t=' + encodeURIComponent(token);
+  } catch (err){
+    rzSubmit.disabled = false;
+    rzSubmit.textContent = 'Rezervēt →';
+    rzErr.textContent = 'Neizdevās nosūtīt. Pārbaudi savienojumu un mēģini vēlreiz.';
+    console.error(err);
+  }
+});
+
+// "Manas rezervācijas" — list saved threads, jump to the most recent (or menu).
+document.getElementById('myResLink').addEventListener('click', e => {
+  e.preventDefault();
+  const list = savedReservations();
+  if (!list.length) return;
+  if (list.length === 1){ location.href = 'thread.html?t=' + encodeURIComponent(list[0].token); return; }
+  const lines = list.map((r,i) => (i+1) + '. ' + r.name + (r.sizeUs ? ' — US ' + r.sizeUs : '') + ' (€' + r.price + ')');
+  const pick = prompt('Manas rezervācijas — ievadi numuru, lai atvērtu čatu:\n\n' + lines.join('\n'), '1');
+  const idx = parseInt(pick, 10) - 1;
+  if (idx >= 0 && idx < list.length) location.href = 'thread.html?t=' + encodeURIComponent(list[idx].token);
+});
+refreshMyResLink();
 
 // Load data.js (shoe list) + images.json fresh, then render. data.js is evaluated
 // through a module wrapper so the same file keeps working in Node (the image bot).

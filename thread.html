@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mana rezervācija — Jordan izpārdošana</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+  .thread{display:flex;flex-direction:column;height:calc(100vh - 140px);min-height:360px}
+  .summary{display:flex;flex-direction:column;gap:6px}
+  .summary .row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .summary .price b{font-family:'Anton',sans-serif;font-size:22px}
+  .chat{flex:1;background:#F7F7F4;border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--ink)}
+  .state{padding:40px 20px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">Jordan <span class="hl">čats</span></a>
+    <span class="spacer"></span>
+    <a class="btn" href="index.html">← Uz veikalu</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="panel" id="card" hidden>
+    <div class="pad summary" id="summary"></div>
+    <div class="thread">
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <form class="composer" id="composer">
+        <textarea id="msg" placeholder="Raksti ziņu veikalam…" maxlength="2000" aria-label="Ziņa"></textarea>
+        <button class="btn btn-primary" id="send" type="submit">Sūtīt</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel" id="notfound" hidden>
+    <div class="state">
+      <h2 style="font-family:'Anton',sans-serif;text-transform:uppercase">Rezervācija nav atrasta</h2>
+      <p class="muted" style="margin-top:8px">Šī saite nav derīga vai rezervācija ir dzēsta.</p>
+      <p style="margin-top:16px"><a class="btn btn-primary" href="index.html">← Atpakaļ uz veikalu</a></p>
+    </div>
+  </div>
+
+  <div class="panel" id="loading">
+    <div class="state muted mono">Ielādē…</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+const STATUS_LV = {
+  new:'Jauna', contacted:'Sazinājāmies', reserved:'Rezervēts',
+  paid:'Apmaksāts', shipped:'Nosūtīts', cancelled:'Atcelts'
+};
+const params = new URLSearchParams(location.search);
+const token = params.get('t');
+const fmt = n => (n==null ? '' : Number(n).toFixed(2).replace('.', ','));
+const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const timeLv = iso => { try { return new Date(iso).toLocaleString('lv-LV',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } };
+
+const client = (window.getSupabase && window.getSupabase());
+let lastCount = -1;
+let current = null;
+
+function showOnly(id){
+  ['card','notfound','loading'].forEach(x => { document.getElementById(x).hidden = (x !== id); });
+}
+
+function renderSummary(d){
+  const size = d.size_us ? ('US ' + d.size_us + (d.size_eu ? ' · EU ' + d.size_eu : '')) : 'Izmērs precizējams';
+  document.getElementById('summary').innerHTML = `
+    <div class="row">
+      <span class="mono muted">${esc(d.shoe_style)}</span>
+      <span class="badge" data-s="${esc(d.status)}">${esc(STATUS_LV[d.status] || d.status)}</span>
+    </div>
+    <div style="font-family:'Anton',sans-serif;font-size:20px;text-transform:uppercase;line-height:1.05">${esc(d.shoe_name)}</div>
+    <div class="row price">
+      <span class="mono">${esc(size)}</span>
+      <span class="price">€ <b>${esc(String(d.price))}</b></span>
+    </div>
+    <div class="mono muted" style="font-size:11.5px">Sveiks, ${esc(d.buyer_name)}! Šeit vari sarakstīties ar veikalu par šo rezervāciju.</div>
+  `;
+}
+
+function renderChat(msgs){
+  const chat = document.getElementById('chat');
+  if (!msgs.length){
+    chat.innerHTML = `<div class="msg system">Uzraksti mums izmēru apstiprinājumu, pakomātu vai jautājumus — atbildēsim šeit.</div>`;
+    return;
+  }
+  const nearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
+  chat.innerHTML = msgs.map(m => `
+    <div class="msg ${m.sender === 'admin' ? 'admin' : 'buyer'}">
+      ${esc(m.body)}
+      <div class="meta">${m.sender === 'admin' ? 'Veikals' : 'Tu'} · ${esc(timeLv(m.created_at))}</div>
+    </div>`).join('');
+  if (nearBottom) chat.scrollTop = chat.scrollHeight;
+}
+
+async function load(){
+  if (!token || !client){ showOnly('notfound'); return; }
+  const { data, error } = await client.rpc('get_thread', { p_token: token });
+  if (error){ console.error(error); return; }
+  if (!data){ showOnly('notfound'); return; }
+  current = data;
+  showOnly('card');
+  renderSummary(data);
+  const msgs = data.messages || [];
+  if (msgs.length !== lastCount){ renderChat(msgs); lastCount = msgs.length; }
+  else { // status may still change without new messages
+    document.querySelector('#summary .badge')?.setAttribute('data-s', data.status);
+  }
+}
+
+document.getElementById('composer').addEventListener('submit', async e => {
+  e.preventDefault();
+  const ta = document.getElementById('msg');
+  const body = ta.value.trim();
+  if (!body || !client) return;
+  const btn = document.getElementById('send');
+  btn.disabled = true;
+  try {
+    const { error } = await client.rpc('post_message', { p_token: token, p_body: body });
+    if (error) throw error;
+    ta.value = '';
+    lastCount = -1;      // force re-render
+    await load();
+  } catch(err){ console.error(err); alert('Neizdevās nosūtīt ziņu. Mēģini vēlreiz.'); }
+  finally { btn.disabled = false; ta.focus(); }
+});
+// Enter to send, Shift+Enter for newline
+document.getElementById('msg').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('composer').requestSubmit(); }
+});
+
+if (!client){ showOnly('notfound'); }
+else {
+  load();
+  setInterval(() => { if (!document.hidden) load(); }, 3000);
+}
+</script>
+</body>
+</html>
