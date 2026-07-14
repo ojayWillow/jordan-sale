@@ -84,6 +84,11 @@
   .info{padding:11px;display:flex;flex-direction:column;gap:5px;flex:1}
   .name{font-weight:700;font-size:13.5px;line-height:1.25;text-transform:uppercase}
   .code{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted)}
+  .sizes{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+  .size-chip{font-family:'IBM Plex Mono',monospace;font-size:10.5px;line-height:1.1;border:1px solid var(--line);padding:3px 5px;display:inline-flex;gap:4px;align-items:baseline;white-space:nowrap}
+  .size-chip b{font-weight:600}
+  .size-chip i{font-style:normal;color:var(--muted);font-size:9.5px}
+  .size-lbl{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
   .prices{margin-top:auto;padding-top:8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
   .rrp{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);text-decoration:line-through}
   .now{
@@ -145,6 +150,9 @@
   .lb-reserve{display:block;text-align:center;text-decoration:none;color:var(--ink);font-weight:600;font-size:15px;border:1.5px solid var(--ink);background:var(--marker);padding:13px;margin-top:8px;transition:box-shadow .12s ease,transform .12s ease}
   .lb-reserve:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
   .lb-reserve:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .lb-sizes{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .lb-sizes .size-chip{font-size:12.5px;padding:5px 8px}
+  .lb-sizes .size-chip i{font-size:11px}
   .lb-note{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:2px}
   @media (max-width:720px){
     .lb{padding:0}
@@ -256,6 +264,8 @@
         <span class="lb-rrp" id="lbRrp"></span>
         <span class="lb-now" id="lbPrice"></span>
       </div>
+      <div class="size-lbl" id="lbSizesLbl" hidden>Pieejamie izmēri (US · EU)</div>
+      <div class="lb-sizes" id="lbSizes"></div>
       <a class="lb-reserve" id="lbReserve" target="_blank" rel="noopener">Rezervēt →</a>
       <p class="lb-note">Izmēru un pakomātu (Omniva / DPD / Venipak) precizē Telegram čatā. Piegāde €3,99.</p>
     </div>
@@ -274,6 +284,20 @@ const CONFIG = {
 
 const pct = s => Math.round((1 - s.price / s.rrp) * 100);
 const isSlide = s => /slide|mule/i.test(s.name);
+
+// Nike WMNS US → EU size chart (validated against the store's own box labels:
+// US 8.5→40, US 9→40.5, US 12→44.5). sizes:[...] in data.js holds US women's sizes.
+const US_TO_EU = {
+  5:35.5, 5.5:36, 6:36.5, 6.5:37.5, 7:38, 7.5:38.5, 8:39, 8.5:40,
+  9:40.5, 9.5:41, 10:42, 10.5:42.5, 11:43, 11.5:44, 12:44.5
+};
+const euOf = us => US_TO_EU[us];
+const sizeChips = s => (s.sizes && s.sizes.length)
+  ? [...s.sizes].sort((a,b) => a - b).map(us => {
+      const eu = euOf(us);
+      return `<span class="size-chip"><b>${us}</b>${eu != null ? `<i>EU ${eu}</i>` : ''}</span>`;
+    }).join('')
+  : '';
 
 // Shoe list + official photo URLs are loaded at runtime with no-cache so that
 // price changes (data.js) and the weekly photo refresh (images.json) always
@@ -350,6 +374,7 @@ function render(){
       <div class="info">
         <div class="name">${s.name}</div>
         <div class="code">${s.style}</div>
+        ${s.sizes && s.sizes.length ? `<div class="size-lbl">Izmēri (US · EU)</div><div class="sizes">${sizeChips(s)}</div>` : ''}
         <div class="prices">
           <span class="rrp">€${fmt(s.rrp)}</span>
           <span class="now">€${s.price}</span>
@@ -409,6 +434,9 @@ function openLightbox(style){
   document.getElementById('lbBadge').textContent = '−' + pct(s) + '%';
   document.getElementById('lbRrp').textContent = '€' + fmt(s.rrp);
   document.getElementById('lbPrice').textContent = '€' + s.price;
+  const hasSizes = s.sizes && s.sizes.length;
+  document.getElementById('lbSizesLbl').hidden = !hasSizes;
+  document.getElementById('lbSizes').innerHTML = hasSizes ? sizeChips(s) : '';
   const a = document.getElementById('lbReserve');
   a.href = reserveLink(s);
   a.setAttribute('data-msg', reserveMsg(s));
