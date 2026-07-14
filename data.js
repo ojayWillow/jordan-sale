@@ -87,7 +87,7 @@ const SHOES = [
   {style:"HQ2164-001", name:"WMNS Jordan Trunner LX", rrp:149.99, price:80},
   {style:"IR2011-247", name:"WMNS Air Jordan 1 Mid SE", rrp:149.99, price:54},
   {style:"DC0774-203", name:"WMNS Air Jordan 1 Low", rrp:149.99, price:54},
-  {style:"IR1839-001", name:"WMNS Jordan Trunner O/S", rrp:129.99, price:44},
+  {style:"IR1839-001", name:"WMNS Jordan Trunner O/S", rrp:129.99, price:44, sizes:[6,7,7.5,8,8.5]},
   {style:"IR1839-100", name:"WMNS Jordan Trunner O/S", rrp:129.99, price:44},
   {style:"FZ9854-606", name:"WMNS Jordan Flight Court", rrp:119.99, price:64},
   {style:"FZ7012-601", name:"WMNS Jordan Sophia Slide SS", rrp:99.99, price:40},
