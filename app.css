@@ -54,12 +54,13 @@ label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-
 .badge[data-s="cancelled"]{background:#f4dada;text-decoration:line-through}
 
 /* Chat */
-.chat{display:flex;flex-direction:column;gap:8px;padding:14px;overflow-y:auto}
-.msg{max-width:78%;padding:8px 11px;border:1.5px solid var(--ink);font-size:14px;line-height:1.35;white-space:pre-wrap;word-break:break-word}
-.msg .meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px}
-.msg.buyer{align-self:flex-start;background:var(--card)}
-.msg.admin{align-self:flex-end;background:var(--marker)}
-.msg.system{align-self:center;background:transparent;border:0;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11.5px}
+.chat{display:flex;flex-direction:column;gap:4px;padding:14px;overflow-y:auto}
+.msg{max-width:min(72%,440px);width:fit-content;padding:6px 10px;border:1.5px solid var(--ink);border-radius:14px;font-size:13.5px;line-height:1.3;white-space:pre-wrap;word-break:break-word}
+.msg .meta{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px;opacity:.7}
+.msg.buyer{align-self:flex-start;background:var(--card);border-bottom-left-radius:4px}
+.msg.admin{align-self:flex-end;background:var(--marker);border-bottom-right-radius:4px}
+.msg + .msg{margin-top:0}
+.msg.system{align-self:center;background:transparent;border:0;border-radius:0;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11px;max-width:100%;text-align:center}
 .composer{display:flex;gap:8px;border-top:1.5px solid var(--ink);padding:12px;background:var(--card)}
 .composer textarea{resize:none;height:44px;min-height:44px}
 
