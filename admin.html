@@ -267,7 +267,10 @@ async function boot(){
   if (!client){ show('noconfig'); return; }
   const { data:{ session } } = await client.auth.getSession();
   if (session){ enterApp(); } else { show('login'); }
-  client.auth.onAuthStateChange((_e, s) => { if (s){ enterApp(); } else { show('login'); location.reload(); } });
+  client.auth.onAuthStateChange((event, s) => {
+    if (s){ enterApp(); }
+    else { show('login'); if (event === 'SIGNED_OUT') location.reload(); }
+  });
 }
 let started = false;
 function enterApp(){
