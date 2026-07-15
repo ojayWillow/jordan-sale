@@ -103,6 +103,7 @@
 const STATUS = ['chat','new','contacted','reserved','paid','shipped','cancelled'];
 const STATUS_LV = { chat:'Čats', new:'Jauna', contacted:'Sazinājāmies', reserved:'Rezervēts', paid:'Apmaksāts', shipped:'Nosūtīts', cancelled:'Atcelts' };
 const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const payRef = t => (t||'').replace(/-/g,'').slice(0,6).toUpperCase();
 const timeLv = iso => { try { return new Date(iso).toLocaleString('lv-LV',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } };
 const SEEN_KEY = 'adminSeen';
 const seen = (() => { try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || {}; } catch(e){ return {}; } })();
@@ -180,6 +181,7 @@ function renderThead(r){
       <span class="mono muted">Pircējs:</span> <b>${esc(r.buyer_name)}</b>
       ${r.buyer_contact ? '<span class="contact">' + esc(r.buyer_contact) + '</span>' : '<span class="mono muted">(kontakts nav norādīts)</span>'}
     </div>
+    ${r.shoe_style !== 'CHAT' ? `<div class="row"><span class="mono muted">Apmaksas atsauce:</span> <b class="mono">${payRef(r.thread_token)}</b></div>` : ''}
     ${r.note ? '<div class="contact">Piezīme: ' + esc(r.note) + '</div>' : ''}`;
   document.getElementById('statusSel').addEventListener('change', async e => {
     const v = e.target.value;
