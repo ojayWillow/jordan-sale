@@ -16,6 +16,15 @@
   .summary .price b{font-family:'Anton',sans-serif;font-size:22px}
   .chat{flex:1;background:#F7F7F4;border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--ink)}
   .state{padding:40px 20px;text-align:center}
+  .pay{border-top:1.5px solid var(--line);display:flex;flex-direction:column;gap:7px}
+  .pay h3{font-family:'Anton',sans-serif;font-size:15px;text-transform:uppercase;letter-spacing:.5px}
+  .pay .kv{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1.5px solid var(--ink);padding:7px 10px;background:#F7F7F4}
+  .pay .k{font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .pay .v{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;word-break:break-all}
+  .pay .copy{border:1.5px solid var(--ink);background:var(--card);font-family:'IBM Plex Mono',monospace;font-size:11px;padding:5px 9px;cursor:pointer;flex:0 0 auto}
+  .pay .copy:hover{background:var(--marker)}
+  .pay .paidbox{border:1.5px solid var(--ink);background:#d8f5df;padding:10px 12px;font-weight:600}
+  .pay .hint{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);line-height:1.5}
 </style>
 </head>
 <body>
@@ -31,6 +40,7 @@
 <div class="wrap">
   <div class="panel" id="card" hidden>
     <div class="pad summary" id="summary"></div>
+    <div class="pad pay" id="pay" hidden></div>
     <div class="thread">
       <div class="chat" id="chat" aria-live="polite"></div>
       <form class="composer" id="composer">
@@ -55,6 +65,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
+<script src="payment-config.js"></script>
 <script>
 const STATUS_LV = {
   chat:'Čats', new:'Jauna', contacted:'Sazinājāmies', reserved:'Rezervēts',
@@ -90,6 +101,34 @@ function renderSummary(d){
   `;
 }
 
+// Short bank-transfer reference derived from the private token (matchable in admin).
+function payRef(){ return (token || '').replace(/-/g,'').slice(0,6).toUpperCase(); }
+function renderPay(d){
+  const el = document.getElementById('pay');
+  const PAY = window.PAY || {};
+  const payable = PAY.enabled && d.shoe_style !== 'CHAT' && d.price != null && d.status !== 'cancelled';
+  if (!payable){ el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  if (d.status === 'paid'){
+    el.innerHTML = `<div class="paidbox">✓ Apmaksāts — paldies! Par piegādi sazināsimies čatā zemāk.</div>`;
+    return;
+  }
+  const ref = payRef();
+  el.innerHTML = `
+    <h3>Apmaksa — bankas pārskaitījums</h3>
+    <div class="kv"><div><div class="k">Summa</div><div class="v">€${esc(fmt(d.price))}</div></div></div>
+    <div class="kv"><div><div class="k">IBAN</div><div class="v">${esc(PAY.iban)}</div></div><button class="copy" data-copy="${esc(PAY.iban)}">Kopēt</button></div>
+    ${PAY.recipient ? `<div class="kv"><div><div class="k">Saņēmējs</div><div class="v">${esc(PAY.recipient)}</div></div></div>` : ''}
+    ${PAY.bank ? `<div class="kv"><div><div class="k">Banka</div><div class="v">${esc(PAY.bank)}</div></div></div>` : ''}
+    <div class="kv"><div><div class="k">Atsauce (obligāti)</div><div class="v">${esc(ref)}</div></div><button class="copy" data-copy="${esc(ref)}">Kopēt</button></div>
+    <p class="hint">Pārskaiti summu uz norādīto IBAN, <b>obligāti norādot atsauci ${esc(ref)}</b> maksājuma mērķī. Kad nauda saņemta, apstiprināsim čatā.${PAY.note ? ' ' + esc(PAY.note) : ''}</p>`;
+}
+document.getElementById('pay').addEventListener('click', e => {
+  const b = e.target.closest('.copy'); if (!b) return;
+  const t = b.getAttribute('data-copy');
+  if (navigator.clipboard){ navigator.clipboard.writeText(t).catch(()=>{}); const o = b.textContent; b.textContent = 'Nokopēts ✓'; setTimeout(() => b.textContent = o, 1500); }
+});
+
 function renderChat(msgs){
   const chat = document.getElementById('chat');
   if (!msgs.length){
@@ -113,6 +152,7 @@ async function load(){
   current = data;
   showOnly('card');
   renderSummary(data);
+  renderPay(data);
   const msgs = data.messages || [];
   if (msgs.length !== lastCount){ renderChat(msgs); lastCount = msgs.length; }
   else { // status may still change without new messages

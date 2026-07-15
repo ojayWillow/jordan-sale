@@ -13,6 +13,7 @@ Atlaides līdz –72%, 101 modelis, piegāde visā Latvijā.
 | `thread.html` | Pircēja privātais čats ar veikalu (`thread.html?t=…`) |
 | `admin.html` | Administratora panelis — rezervācijas + čats (jāpieslēdzas) |
 | `supabase-config.js` | Supabase projekta URL + anon atslēga |
+| `payment-config.js` | Bankas pārskaitījuma dati (IBAN) rezervācijām |
 | `supabase.sql` | Datubāzes shēma + drošība (jāpalaiž vienreiz) |
 | `app.css` | Kopīgais stils `thread.html` / `admin.html` lapām |
 | `scripts/fetch-images.js` | Iegūst foto no Nike produktu API pēc modeļa koda |
@@ -50,6 +51,26 @@ ziņas. Rezervējot konkrētu apavu, atveras tas pats privātais čats, pieķēd
 (Čats → Jauna → Rezervēts → Apmaksāts → Nosūtīts), un pašu čatu. Jaunas ziņas parādās
 ~3 sekunžu laikā. Kamēr `admin.html` ir atvērts, pārlūks var rādīt paziņojumu par jaunu
 ziņu.
+
+## Apmaksa (bankas pārskaitījums)
+
+Rezervācijas var apmaksāt ar bankas pārskaitījumu — bez maksas pakalpojumu sniedzēja.
+Kad IBAN gatavs, aizpildi `payment-config.js`:
+
+```js
+window.PAY = {
+  enabled: true,                       // ieslēdz apmaksas info
+  iban: "LV00 XXXX 0000 0000 0000 0",
+  recipient: "Vārds Uzvārds",
+  bank: "",                            // neobligāti
+  note: ""                             // neobligāti
+};
+```
+
+Pircējs savā **privātajā** rezervācijas čatā redz IBAN, summu un īsu **atsauci**
+(piem. `A1B2C3`), ko norādīt pārskaitījumā. `admin.html` rāda to pašu atsauci —
+kad nauda pienāk, iestati statusu **Apmaksāts**. Kamēr `enabled: false`, apmaksas
+info netiek rādīta. IBAN ir redzams tikai čatā, nevis publiski katalogā.
 
 ## Lokāla priekšskatīšana
 
