@@ -76,16 +76,36 @@ as $$
 declare
   v_token uuid;
 begin
-  if coalesce(btrim(p_buyer_name), '') = '' then
-    raise exception 'buyer_name required';
-  end if;
-
+  -- Name is optional (anonymous allowed); fall back to a neutral label.
   insert into public.reservations
     (shoe_style, shoe_name, price, size_us, size_eu, buyer_name, buyer_contact, note)
   values
     (left(p_shoe_style, 40), left(p_shoe_name, 120), p_price,
      left(p_size_us, 12), left(p_size_eu, 12),
-     left(btrim(p_buyer_name), 80), left(p_buyer_contact, 160), left(p_note, 500))
+     coalesce(nullif(left(btrim(p_buyer_name), 80), ''), 'Anonīms'),
+     left(p_buyer_contact, 160), left(p_note, 500))
+  returning thread_token into v_token;
+
+  return v_token;
+end;
+$$;
+
+-- 1b) Start a general anonymous chat (not tied to a specific shoe).
+-- p_context is an optional short label, e.g. the page/shoe the visitor was on.
+create or replace function public.start_chat(p_context text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_token uuid;
+begin
+  insert into public.reservations
+    (shoe_style, shoe_name, buyer_name, note, status)
+  values
+    ('CHAT', 'Vispārīgs čats', 'Anonīms',
+     nullif(left(btrim(p_context), 200), ''), 'chat')
   returning thread_token into v_token;
 
   return v_token;
@@ -158,10 +178,12 @@ $$;
 -- ---------- Grants ----------------------------------------------------------
 -- Lock down the functions, then hand only these three to anonymous buyers.
 revoke all on function public.create_reservation(text,text,numeric,text,text,text,text,text) from public;
+revoke all on function public.start_chat(text) from public;
 revoke all on function public.get_thread(uuid) from public;
 revoke all on function public.post_message(uuid,text) from public;
 
 grant execute on function public.create_reservation(text,text,numeric,text,text,text,text,text) to anon, authenticated;
+grant execute on function public.start_chat(text) to anon, authenticated;
 grant execute on function public.get_thread(uuid) to anon, authenticated;
 grant execute on function public.post_message(uuid,text) to anon, authenticated;
 

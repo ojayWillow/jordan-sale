@@ -185,6 +185,31 @@
   .myres-link{font-family:'IBM Plex Mono',monospace;font-size:13px;border:1.5px solid var(--ink);background:var(--card);padding:9px 14px;cursor:pointer;text-decoration:none;color:var(--ink)}
   .myres-link:hover{background:var(--marker)}
 
+  /* ---------- Floating chat window ---------- */
+  .chatfab{position:fixed;right:16px;bottom:16px;z-index:130;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;border:2px solid var(--ink);background:var(--marker);color:var(--ink);padding:12px 16px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);display:inline-flex;gap:8px;align-items:center;transition:transform .12s ease,box-shadow .12s ease}
+  .chatfab:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
+  .chatfab:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+  .chatfab .cw-dot{width:9px;height:9px;border-radius:50%;background:#a12;display:none}
+  .chatfab.unread .cw-dot{display:inline-block}
+  .cw{position:fixed;right:16px;bottom:16px;z-index:131;width:340px;max-width:calc(100vw - 32px);height:470px;max-height:calc(100vh - 32px);background:var(--card);border:2px solid var(--ink);box-shadow:5px 5px 0 var(--ink);display:none;flex-direction:column}
+  .cw.open{display:flex}
+  .cw-head{background:var(--ink);color:var(--bg);padding:11px 13px;display:flex;align-items:center;gap:8px}
+  .cw-head .t{font-family:'Anton',sans-serif;font-size:16px;text-transform:uppercase;letter-spacing:.5px;flex:1;line-height:1}
+  .cw-head .sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--marker);display:block;margin-top:2px}
+  .cw-head button{background:transparent;border:0;color:var(--bg);font-size:18px;cursor:pointer;line-height:1;padding:0 2px}
+  .cw-body{flex:1;overflow-y:auto;background:#F7F7F4;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .cw-msg{max-width:82%;padding:8px 11px;border:1.5px solid var(--ink);font-size:13.5px;line-height:1.35;white-space:pre-wrap;word-break:break-word}
+  .cw-msg .m{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--muted);margin-top:4px}
+  .cw-msg.buyer{align-self:flex-end;background:var(--marker)}
+  .cw-msg.admin{align-self:flex-start;background:var(--card)}
+  .cw-msg.system{align-self:center;background:transparent;border:0;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-align:center;max-width:100%}
+  .cw-foot{display:flex;gap:6px;border-top:1.5px solid var(--ink);padding:8px;background:var(--card)}
+  .cw-foot textarea{flex:1;resize:none;height:40px;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px;border:1.5px solid var(--ink);border-radius:0;background:var(--card);color:var(--ink)}
+  .cw-foot textarea:focus{outline:2px solid var(--marker);outline-offset:1px}
+  .cw-foot button{border:1.5px solid var(--ink);background:var(--marker);font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:16px;padding:0 14px;cursor:pointer}
+  .cw-foot button[disabled]{opacity:.5;cursor:not-allowed}
+  @media (max-width:480px){ .cw{right:0;bottom:0;width:100vw;height:100dvh;max-height:100dvh;border:0} }
+
   @media (max-width:720px){
     .lb{padding:0}
     .lb-card{grid-template-columns:1fr;max-width:none;width:100%;height:100%;max-height:100%;border:0}
@@ -304,6 +329,20 @@
   </div>
 </div>
 
+<!-- Floating personal chat window -->
+<button class="chatfab" id="chatFab" aria-label="Atvērt čatu ar veikalu">💬 Čats<span class="cw-dot" aria-hidden="true"></span></button>
+<div class="cw" id="cw" role="dialog" aria-label="Čats ar veikalu">
+  <div class="cw-head">
+    <span class="t">Čats ar veikalu<span class="sub">privāts · atbildam parasti ātri</span></span>
+    <button id="cwClose" aria-label="Aizvērt čatu">✕</button>
+  </div>
+  <div class="cw-body" id="cwBody" aria-live="polite"></div>
+  <form class="cw-foot" id="cwFoot">
+    <textarea id="cwMsg" placeholder="Raksti mums…" maxlength="2000" aria-label="Ziņa"></textarea>
+    <button type="submit" id="cwSend" aria-label="Sūtīt">→</button>
+  </form>
+</div>
+
 <!-- Reservation modal -->
 <div class="rz" id="rz" role="dialog" aria-modal="true" aria-label="Rezervācija">
   <div class="rz-card">
@@ -319,8 +358,8 @@
         <div class="rz-sizes" id="rzSizes" role="group" aria-label="Izmērs"></div>
       </div>
       <div>
-        <label for="rzName">Vārds *</label>
-        <input id="rzName" name="name" type="text" autocomplete="name" maxlength="80" required>
+        <label for="rzName">Vārds (neobligāts)</label>
+        <input id="rzName" name="name" type="text" autocomplete="name" maxlength="80">
       </div>
       <div>
         <label for="rzContact">Kontakts (e-pasts / tālrunis — neobligāts)</label>
@@ -593,7 +632,6 @@ rzForm.addEventListener('submit', async e => {
   const hp = document.getElementById('rzHp').value;             // honeypot
 
   if (hp) { closeReserve(); return; }                            // silently drop bots
-  if (!name){ rzErr.textContent = 'Lūdzu ievadi vārdu.'; return; }
   const hasSizes = s.sizes && s.sizes.length;
   if (hasSizes && rzState.sizeUs == null){ rzErr.textContent = 'Lūdzu izvēlies izmēru.'; return; }
 
@@ -636,6 +674,83 @@ document.getElementById('myResLink').addEventListener('click', e => {
   if (idx >= 0 && idx < list.length) location.href = 'thread.html?t=' + encodeURIComponent(list[idx].token);
 });
 refreshMyResLink();
+
+// ---------- Floating personal chat window ----------
+// Each visitor gets their own private thread (token kept in their browser).
+// No name / email required — the private thread is how we know "who is who".
+const CW_LS = 'jordanChatThread';
+const cw = document.getElementById('cw');
+const cwBody = document.getElementById('cwBody');
+const chatFab = document.getElementById('chatFab');
+let cwToken = null, cwCount = -1, cwSeen = 0, cwPoll = null, cwBgPoll = null;
+try { const raw = JSON.parse(localStorage.getItem(CW_LS) || 'null'); if (raw) { cwToken = raw.token; cwSeen = raw.seen || 0; } } catch(e){}
+
+const cwEsc = s => (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cwTime = iso => { try { return new Date(iso).toLocaleString('lv-LV',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } };
+function cwSave(){ try { localStorage.setItem(CW_LS, JSON.stringify({ token: cwToken, seen: cwSeen })); } catch(e){} }
+
+function cwRender(msgs){
+  if (!msgs.length){ cwBody.innerHTML = '<div class="cw-msg system">Sveiks! Pajautā par izmēru, pieejamību vai piegādi — atbildēsim šeit, privāti.</div>'; return; }
+  const nearBottom = cwBody.scrollHeight - cwBody.scrollTop - cwBody.clientHeight < 70;
+  cwBody.innerHTML = msgs.map(m => `<div class="cw-msg ${m.sender==='admin'?'admin':'buyer'}">${cwEsc(m.body)}<div class="m">${m.sender==='admin'?'Veikals':'Tu'} · ${cwEsc(cwTime(m.created_at))}</div></div>`).join('');
+  if (nearBottom) cwBody.scrollTop = cwBody.scrollHeight;
+}
+async function cwLoad(markSeen){
+  const client = window.getSupabase && window.getSupabase();
+  if (!client){ cwBody.innerHTML = '<div class="cw-msg system">Čats vēl nav aktivizēts. Lūdzu mēģini vēlāk.</div>'; return; }
+  if (!cwToken){ cwRender([]); return; }
+  const { data, error } = await client.rpc('get_thread', { p_token: cwToken });
+  if (error){ console.error(error); return; }
+  if (!data){ cwToken = null; cwSave(); cwRender([]); return; }   // thread no longer exists
+  const msgs = data.messages || [];
+  if (msgs.length !== cwCount){ cwRender(msgs); cwCount = msgs.length; }
+  const adminCount = msgs.filter(m => m.sender === 'admin').length;
+  if (cw.classList.contains('open') || markSeen){ cwSeen = adminCount; cwSave(); chatFab.classList.remove('unread'); }
+  else if (adminCount > cwSeen){ chatFab.classList.add('unread'); }
+}
+function cwOpen(){
+  cw.classList.add('open'); chatFab.style.display = 'none';
+  cwCount = -1; cwLoad(true);
+  if (cwPoll) clearInterval(cwPoll);
+  cwPoll = setInterval(() => { if (!document.hidden) cwLoad(false); }, 3000);
+  setTimeout(() => document.getElementById('cwMsg').focus(), 40);
+}
+function cwClose(){
+  cw.classList.remove('open'); chatFab.style.display = '';
+  if (cwPoll){ clearInterval(cwPoll); cwPoll = null; }
+  cwStartBg();
+}
+function cwStartBg(){
+  if (cwBgPoll) clearInterval(cwBgPoll);
+  if (!cwToken) return;
+  cwBgPoll = setInterval(() => { if (!document.hidden && !cw.classList.contains('open')) cwLoad(false); }, 15000);
+}
+chatFab.addEventListener('click', cwOpen);
+document.getElementById('cwClose').addEventListener('click', cwClose);
+document.getElementById('cwFoot').addEventListener('submit', async e => {
+  e.preventDefault();
+  const ta = document.getElementById('cwMsg');
+  const body = ta.value.trim(); if (!body) return;
+  const client = window.getSupabase && window.getSupabase();
+  if (!client){ cwBody.innerHTML = '<div class="cw-msg system">Čats vēl nav aktivizēts.</div>'; return; }
+  const btn = document.getElementById('cwSend'); btn.disabled = true;
+  try {
+    if (!cwToken){
+      const { data, error } = await client.rpc('start_chat', { p_context: document.title });
+      if (error) throw error;
+      cwToken = data; cwSave();
+    }
+    const { error: e2 } = await client.rpc('post_message', { p_token: cwToken, p_body: body });
+    if (e2) throw e2;
+    ta.value = ''; cwCount = -1; await cwLoad(true);
+  } catch(err){ console.error(err); alert('Neizdevās nosūtīt. Mēģini vēlreiz.'); }
+  finally { btn.disabled = false; ta.focus(); }
+});
+document.getElementById('cwMsg').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('cwFoot').requestSubmit(); }
+});
+// If this visitor already has a chat, quietly check for new replies.
+if (cwToken){ cwLoad(false); cwStartBg(); }
 
 // Load data.js (shoe list) + images.json fresh, then render. data.js is evaluated
 // through a module wrapper so the same file keeps working in Node (the image bot).

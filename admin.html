@@ -74,6 +74,7 @@
     <div class="panel">
       <div class="filters" id="filters">
         <button class="chip" data-f="all" aria-pressed="true">Visas</button>
+        <button class="chip" data-f="chat" aria-pressed="false">Čati</button>
         <button class="chip" data-f="new" aria-pressed="false">Jaunas</button>
         <button class="chip" data-f="reserved" aria-pressed="false">Rezervēts</button>
         <button class="chip" data-f="paid" aria-pressed="false">Apmaksāts</button>
@@ -99,8 +100,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script>
-const STATUS = ['new','contacted','reserved','paid','shipped','cancelled'];
-const STATUS_LV = { new:'Jauna', contacted:'Sazinājāmies', reserved:'Rezervēts', paid:'Apmaksāts', shipped:'Nosūtīts', cancelled:'Atcelts' };
+const STATUS = ['chat','new','contacted','reserved','paid','shipped','cancelled'];
+const STATUS_LV = { chat:'Čats', new:'Jauna', contacted:'Sazinājāmies', reserved:'Rezervēts', paid:'Apmaksāts', shipped:'Nosūtīts', cancelled:'Atcelts' };
 const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const timeLv = iso => { try { return new Date(iso).toLocaleString('lv-LV',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } };
 const SEEN_KEY = 'adminSeen';
@@ -139,8 +140,10 @@ function renderList(){
       </div>
       <div class="sub">
         <span>${esc(r.buyer_name)}</span>
-        ${r.size_us ? '<span>US ' + esc(r.size_us) + (r.size_eu ? ' · EU ' + esc(r.size_eu) : '') + '</span>' : '<span>izmērs?</span>'}
-        <span>€${esc(String(r.price))}</span>
+        ${r.shoe_style === 'CHAT'
+          ? '<span>💬 čats</span>'
+          : (r.size_us ? '<span>US ' + esc(r.size_us) + (r.size_eu ? ' · EU ' + esc(r.size_eu) : '') + '</span>' : '<span>izmērs?</span>')}
+        ${r.price != null ? '<span>€' + esc(String(r.price)) + '</span>' : ''}
         <span>${esc(timeLv(r.last_message_at))}</span>
       </div>
     </button>`).join('');
@@ -163,12 +166,12 @@ async function loadReservations(){
 function renderThead(r){
   document.getElementById('thead').innerHTML = `
     <div class="row">
-      <span class="mono muted">${esc(r.shoe_style)}</span>
+      <span class="mono muted">${r.shoe_style === 'CHAT' ? '💬 čats' : esc(r.shoe_style)}</span>
       <span style="font-family:'Anton',sans-serif;font-size:18px;text-transform:uppercase">${esc(r.shoe_name)}</span>
     </div>
     <div class="row">
-      <span class="mono">${r.size_us ? 'US ' + esc(r.size_us) + (r.size_eu ? ' · EU ' + esc(r.size_eu) : '') : 'Izmērs precizējams'}</span>
-      <span class="mono">€${esc(String(r.price))}</span>
+      ${r.shoe_style !== 'CHAT' ? `<span class="mono">${r.size_us ? 'US ' + esc(r.size_us) + (r.size_eu ? ' · EU ' + esc(r.size_eu) : '') : 'Izmērs precizējams'}</span>` : ''}
+      ${r.price != null ? `<span class="mono">€${esc(String(r.price))}</span>` : ''}
       <select class="status" id="statusSel" aria-label="Statuss">
         ${STATUS.map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${STATUS_LV[s]}</option>`).join('')}
       </select>

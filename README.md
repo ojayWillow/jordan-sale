@@ -41,10 +41,15 @@ Dati glabājas tavā **Supabase** projektā (bezmaksas līmenis pietiek).
 > `anon` atslēga ir publiska pēc dizaina (drošību nodrošina `supabase.sql` noteikumi).
 > **Nekad** neliec šeit `service_role` atslēgu.
 
-**Kā strādā:** `admin.html` rāda visas rezervācijas (jaunākās augšā), statusu (Jauna →
-Rezervēts → Apmaksāts → Nosūtīts), pircēja kontaktu un čatu. Jaunas ziņas parādās
+**Personīgais čats (bez personas datiem):** katram apmeklētājam ir sava **privāta**
+saruna ar veikalu. Peldošā poga *"💬 Čats"* atver čata logu jebkurā lapā — nav vajadzīgs
+vārds vai e-pasts, sarunas pavediens tiek atcerēts pārlūkā. Neviens neredz cita cilvēka
+ziņas. Rezervējot konkrētu apavu, atveras tas pats privātais čats, pieķēdēts pie modeļa.
+
+**Kā strādā:** `admin.html` rāda visas sarunas un rezervācijas (jaunākās augšā), statusu
+(Čats → Jauna → Rezervēts → Apmaksāts → Nosūtīts), un pašu čatu. Jaunas ziņas parādās
 ~3 sekunžu laikā. Kamēr `admin.html` ir atvērts, pārlūks var rādīt paziņojumu par jaunu
-rezervāciju.
+ziņu.
 
 ## Lokāla priekšskatīšana
 
