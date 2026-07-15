@@ -12,8 +12,8 @@
 // "coming soon" message instead of erroring.
 // ============================================================================
 window.SUPA = {
-  url: "",       // e.g. "https://abcdefgh.supabase.co"
-  anonKey: ""    // e.g. "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+  url: "https://fxnwinqiwufcsmtlxzsp.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ4bndpbnFpd3VmY3NtdGx4enNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwOTY2NzMsImV4cCI6MjA5OTY3MjY3M30.9f9eR-hCRplklXjXtS3ftY8Lmw2OlOrCq22nWK6UvNo"
 };
 
 window.SUPA.ready = !!(window.SUPA.url && window.SUPA.anonKey);
