@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — rezervācijas</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<style>
+  .layout{max-width:1100px;margin:0 auto;padding:14px;display:grid;grid-template-columns:340px 1fr;gap:14px;align-items:start}
+  @media (max-width:820px){ .layout{grid-template-columns:1fr} .thread-col[data-empty="1"]{display:none} }
+  .filters{display:flex;gap:6px;flex-wrap:wrap;padding:12px;border-bottom:1.5px solid var(--line)}
+  .chip{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:6px 10px;border:1.5px solid var(--ink);background:var(--card);cursor:pointer}
+  .chip[aria-pressed="true"]{background:var(--ink);color:var(--marker)}
+  .list{max-height:72vh;overflow-y:auto}
+  .item{display:block;width:100%;text-align:left;border:0;border-bottom:1.5px solid var(--line);background:var(--card);padding:12px 14px;cursor:pointer;font:inherit}
+  .item:hover{background:#F7F7F4}
+  .item[aria-selected="true"]{background:var(--marker)}
+  .item .top{display:flex;align-items:center;gap:8px}
+  .item .nm{font-weight:700;font-size:13.5px;text-transform:uppercase;line-height:1.2;flex:1}
+  .item .sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--bad);flex:0 0 auto}
+  .thread-col{min-height:200px}
+  .thread{display:flex;flex-direction:column;height:76vh}
+  .thead{padding:14px;border-bottom:1.5px solid var(--ink);display:flex;flex-direction:column;gap:8px}
+  .thead .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .contact{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink);background:#F7F7F4;border:1px solid var(--line);padding:6px 8px;word-break:break-word}
+  .chat{flex:1;background:#F7F7F4;overflow-y:auto}
+  .empty-state{padding:60px 20px;text-align:center}
+  select.status{width:auto;padding:6px 8px;font-size:12px}
+  .login{max-width:360px;margin:8vh auto;padding:26px}
+  .login h1{font-family:'Anton',sans-serif;font-size:26px;text-transform:uppercase;margin-bottom:4px}
+  .login .field{margin-top:14px}
+  .err{color:var(--bad);font-family:'IBM Plex Mono',monospace;font-size:12px;margin-top:10px;min-height:1px}
+  .count-pill{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--ink);color:var(--marker);padding:2px 7px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">Jordan <span class="hl">admin</span></a>
+    <span class="count-pill" id="countPill" hidden></span>
+    <span class="spacer"></span>
+    <a class="btn" href="index.html">Veikals</a>
+    <button class="btn" id="logout" hidden>Iziet</button>
+  </div>
+</div>
+
+<!-- Login -->
+<div class="panel login" id="login" hidden>
+  <h1>Pieslēgšanās</h1>
+  <p class="muted mono" style="font-size:12px">Tikai veikala administratoram.</p>
+  <form id="loginForm">
+    <div class="field"><label for="email">E-pasts</label><input id="email" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="password">Parole</label><input id="password" type="password" autocomplete="current-password" required></div>
+    <div class="err" id="loginErr"></div>
+    <div class="field"><button class="btn btn-primary" style="width:100%" type="submit">Pieslēgties</button></div>
+  </form>
+</div>
+
+<!-- Config missing notice -->
+<div class="panel login" id="noconfig" hidden>
+  <h1>Nav konfigurēts</h1>
+  <p class="muted mono" style="font-size:12.5px;line-height:1.6">Aizpildi <b>supabase-config.js</b> ar sava Supabase projekta URL un anon atslēgu, un palaid <b>supabase.sql</b> Supabase SQL editorā. Pēc tam šī lapa strādās.</p>
+</div>
+
+<!-- App -->
+<div id="app" hidden>
+  <div class="layout">
+    <div class="panel">
+      <div class="filters" id="filters">
+        <button class="chip" data-f="all" aria-pressed="true">Visas</button>
+        <button class="chip" data-f="chat" aria-pressed="false">Čati</button>
+        <button class="chip" data-f="new" aria-pressed="false">Jaunas</button>
+        <button class="chip" data-f="reserved" aria-pressed="false">Rezervēts</button>
+        <button class="chip" data-f="paid" aria-pressed="false">Apmaksāts</button>
+        <button class="chip" data-f="shipped" aria-pressed="false">Nosūtīts</button>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+
+    <div class="thread-col panel" id="threadCol" data-empty="1">
+      <div class="empty-state muted mono" id="threadEmpty">← Izvēlies rezervāciju, lai atvērtu čatu.</div>
+      <div class="thread" id="thread" hidden>
+        <div class="thead" id="thead"></div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <form class="composer" id="composer">
+          <textarea id="msg" placeholder="Atbilde pircējam…" maxlength="2000" aria-label="Ziņa"></textarea>
+          <button class="btn btn-primary" id="send" type="submit">Sūtīt</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+const STATUS = ['chat','new','contacted','reserved','paid','shipped','cancelled'];
+const STATUS_LV = { chat:'Čats', new:'Jauna', contacted:'Sazinājāmies', reserved:'Rezervēts', paid:'Apmaksāts', shipped:'Nosūtīts', cancelled:'Atcelts' };
+const esc = s => (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const timeLv = iso => { try { return new Date(iso).toLocaleString('lv-LV',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } };
+const SEEN_KEY = 'adminSeen';
+const seen = (() => { try { return JSON.parse(localStorage.getItem(SEEN_KEY)) || {}; } catch(e){ return {}; } })();
+const saveSeen = () => { try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch(e){} };
+
+const client = (window.getSupabase && window.getSupabase());
+let filter = 'all';
+let reservations = [];
+let openId = null;
+let openMsgCount = -1;
+
+function show(view){ // 'login' | 'app' | 'noconfig'
+  document.getElementById('login').hidden = view !== 'login';
+  document.getElementById('app').hidden = view !== 'app';
+  document.getElementById('noconfig').hidden = view !== 'noconfig';
+  document.getElementById('logout').hidden = view !== 'app';
+}
+function isUnread(r){ return r.last_message_at && (!seen[r.id] || new Date(r.last_message_at) > new Date(seen[r.id])); }
+
+function renderList(){
+  const list = document.getElementById('list');
+  const items = reservations.filter(r => filter === 'all' || r.status === filter);
+  const unreadTotal = reservations.filter(isUnread).length;
+  const pill = document.getElementById('countPill');
+  if (unreadTotal){ pill.hidden = false; pill.textContent = unreadTotal + ' jaunas'; document.title = '(' + unreadTotal + ') Admin'; }
+  else { pill.hidden = true; document.title = 'Admin — rezervācijas'; }
+
+  if (!items.length){ list.innerHTML = '<div class="empty-state muted mono">Nav rezervāciju.</div>'; return; }
+  list.innerHTML = items.map(r => `
+    <button class="item" data-id="${r.id}" aria-selected="${r.id === openId}">
+      <div class="top">
+        ${isUnread(r) ? '<span class="dot" title="Jauna ziņa"></span>' : ''}
+        <span class="nm">${esc(r.shoe_name)}</span>
+        <span class="badge" data-s="${esc(r.status)}">${esc(STATUS_LV[r.status] || r.status)}</span>
+      </div>
+      <div class="sub">
+        <span>${esc(r.buyer_name)}</span>
+        ${r.shoe_style === 'CHAT'
+          ? '<span>💬 čats</span>'
+          : (r.size_us ? '<span>US ' + esc(r.size_us) + (r.size_eu ? ' · EU ' + esc(r.size_eu) : '') + '</span>' : '<span>izmērs?</span>')}
+        ${r.price != null ? '<span>€' + esc(String(r.price)) + '</span>' : ''}
+        <span>${esc(timeLv(r.last_message_at))}</span>
+      </div>
+    </button>`).join('');
+}
+
+async function loadReservations(){
+  const { data, error } = await client.from('reservations').select('*').order('last_message_at', { ascending: false });
+  if (error){ console.error(error); return; }
+  const prevUnread = reservations.filter(isUnread).length;
+  reservations = data || [];
+  renderList();
+  // Notify on newly-arrived buyer activity while the tab is open.
+  const nowUnread = reservations.filter(isUnread).length;
+  if (nowUnread > prevUnread && 'Notification' in window && Notification.permission === 'granted' && document.hidden){
+    try { new Notification('Jauna rezervācija / ziņa', { body: nowUnread + ' negaidītas rezervācijas' }); } catch(e){}
+  }
+  if (openId) await loadThread(openId, true);
+}
+
+function renderThead(r){
+  document.getElementById('thead').innerHTML = `
+    <div class="row">
+      <span class="mono muted">${r.shoe_style === 'CHAT' ? '💬 čats' : esc(r.shoe_style)}</span>
+      <span style="font-family:'Anton',sans-serif;font-size:18px;text-transform:uppercase">${esc(r.shoe_name)}</span>
+    </div>
+    <div class="row">
+      ${r.shoe_style !== 'CHAT' ? `<span class="mono">${r.size_us ? 'US ' + esc(r.size_us) + (r.size_eu ? ' · EU ' + esc(r.size_eu) : '') : 'Izmērs precizējams'}</span>` : ''}
+      ${r.price != null ? `<span class="mono">€${esc(String(r.price))}</span>` : ''}
+      <select class="status" id="statusSel" aria-label="Statuss">
+        ${STATUS.map(s => `<option value="${s}" ${s === r.status ? 'selected' : ''}>${STATUS_LV[s]}</option>`).join('')}
+      </select>
+    </div>
+    <div class="row">
+      <span class="mono muted">Pircējs:</span> <b>${esc(r.buyer_name)}</b>
+      ${r.buyer_contact ? '<span class="contact">' + esc(r.buyer_contact) + '</span>' : '<span class="mono muted">(kontakts nav norādīts)</span>'}
+    </div>
+    ${r.note ? '<div class="contact">Piezīme: ' + esc(r.note) + '</div>' : ''}`;
+  document.getElementById('statusSel').addEventListener('change', async e => {
+    const v = e.target.value;
+    const { error } = await client.from('reservations').update({ status: v }).eq('id', r.id);
+    if (error){ console.error(error); alert('Neizdevās mainīt statusu.'); return; }
+    r.status = v; renderList();
+  });
+}
+
+function renderChat(msgs){
+  const chat = document.getElementById('chat');
+  const nearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
+  chat.innerHTML = msgs.length ? msgs.map(m => `
+    <div class="msg ${m.sender === 'admin' ? 'admin' : 'buyer'}">
+      ${esc(m.body)}
+      <div class="meta">${m.sender === 'admin' ? 'Es' : 'Pircējs'} · ${esc(timeLv(m.created_at))}</div>
+    </div>`).join('') : '<div class="msg system">Vēl nav ziņu.</div>';
+  if (nearBottom) chat.scrollTop = chat.scrollHeight;
+}
+
+async function loadThread(id, silent){
+  const r = reservations.find(x => x.id === id); if (!r) return;
+  if (!silent) renderThead(r);
+  const { data, error } = await client.from('messages').select('created_at,sender,body').eq('reservation_id', id).order('created_at');
+  if (error){ console.error(error); return; }
+  const msgs = data || [];
+  if (msgs.length !== openMsgCount || !silent){ renderChat(msgs); openMsgCount = msgs.length; }
+  // Mark seen (latest activity) since admin is viewing it.
+  seen[id] = new Date().toISOString(); saveSeen();
+  renderList();
+}
+
+function openThread(id){
+  openId = id; openMsgCount = -1;
+  document.getElementById('threadCol').dataset.empty = '0';
+  document.getElementById('threadEmpty').hidden = true;
+  document.getElementById('thread').hidden = false;
+  loadThread(id, false);
+}
+
+document.getElementById('list').addEventListener('click', e => {
+  const b = e.target.closest('.item'); if (b) openThread(b.dataset.id);
+});
+document.getElementById('filters').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if (!b) return;
+  filter = b.dataset.f;
+  document.querySelectorAll('#filters .chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+  renderList();
+});
+document.getElementById('composer').addEventListener('submit', async e => {
+  e.preventDefault();
+  const ta = document.getElementById('msg');
+  const body = ta.value.trim();
+  if (!body || !openId) return;
+  const btn = document.getElementById('send'); btn.disabled = true;
+  try {
+    const nowIso = new Date().toISOString();
+    let { error } = await client.from('messages').insert({ reservation_id: openId, sender: 'admin', body });
+    if (error) throw error;
+    await client.from('reservations').update({ last_message_at: nowIso }).eq('id', openId);
+    ta.value = '';
+    openMsgCount = -1;
+    seen[openId] = new Date().toISOString(); saveSeen();
+    await loadThread(openId, false);
+    await loadReservations();
+  } catch(err){ console.error(err); alert('Neizdevās nosūtīt.'); }
+  finally { btn.disabled = false; ta.focus(); }
+});
+document.getElementById('msg').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); document.getElementById('composer').requestSubmit(); }
+});
+
+// ---- Auth ----
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  document.getElementById('loginErr').textContent = '';
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const { error } = await client.auth.signInWithPassword({ email, password });
+  if (error){ document.getElementById('loginErr').textContent = 'Nepareizs e-pasts vai parole.'; return; }
+});
+document.getElementById('logout').addEventListener('click', async () => { await client.auth.signOut(); });
+
+async function boot(){
+  if (!client){ show('noconfig'); return; }
+  const { data:{ session } } = await client.auth.getSession();
+  if (session){ enterApp(); } else { show('login'); }
+  client.auth.onAuthStateChange((_e, s) => { if (s){ enterApp(); } else { show('login'); location.reload(); } });
+}
+let started = false;
+function enterApp(){
+  show('app');
+  if (started) return; started = true;
+  if ('Notification' in window && Notification.permission === 'default'){ try { Notification.requestPermission(); } catch(e){} }
+  loadReservations();
+  setInterval(() => { if (!document.hidden) loadReservations(); }, 3000);
+}
+boot();
+</script>
+</body>
+</html>
