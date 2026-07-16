@@ -80,6 +80,8 @@
         <button class="chip" data-f="paid" aria-pressed="false">Apmaksāts</button>
         <button class="chip" data-f="shipped" aria-pressed="false">Nosūtīts</button>
       </div>
+      <input id="search" type="search" placeholder="Meklēt: vārds / modelis / atsauce…" aria-label="Meklēt"
+             style="border:0;border-bottom:1.5px solid var(--line);padding:10px 14px;width:100%">
       <div class="list" id="list"></div>
     </div>
 
@@ -111,6 +113,7 @@ const saveSeen = () => { try { localStorage.setItem(SEEN_KEY, JSON.stringify(see
 
 const client = (window.getSupabase && window.getSupabase());
 let filter = 'all';
+let searchTerm = '';
 let reservations = [];
 let openId = null;
 let openMsgCount = -1;
@@ -125,7 +128,12 @@ function isUnread(r){ return r.last_message_at && (!seen[r.id] || new Date(r.las
 
 function renderList(){
   const list = document.getElementById('list');
-  const items = reservations.filter(r => filter === 'all' || r.status === filter);
+  const q = searchTerm.toLowerCase();
+  const items = reservations.filter(r =>
+    (filter === 'all' || r.status === filter) &&
+    (!q || [r.buyer_name, r.shoe_name, r.shoe_style, payRef(r.thread_token)]
+             .some(v => (v || '').toLowerCase().includes(q)))
+  );
   const unreadTotal = reservations.filter(isUnread).length;
   const pill = document.getElementById('countPill');
   if (unreadTotal){ pill.hidden = false; pill.textContent = unreadTotal + ' jaunas'; document.title = '(' + unreadTotal + ') Admin'; }
@@ -231,6 +239,7 @@ document.getElementById('filters').addEventListener('click', e => {
   document.querySelectorAll('#filters .chip').forEach(c => c.setAttribute('aria-pressed', c === b));
   renderList();
 });
+document.getElementById('search').addEventListener('input', e => { searchTerm = e.target.value.trim(); renderList(); });
 document.getElementById('composer').addEventListener('submit', async e => {
   e.preventDefault();
   const ta = document.getElementById('msg');
